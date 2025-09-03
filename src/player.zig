@@ -6,7 +6,7 @@ const im = @import("input_manager.zig");
 const mm = @import("map_manager.zig");
 
 var player_atlas: rl.Texture2D = undefined;
-const def_player_size = rl.Vector2{ .x = 40, .y = 60 };
+pub const def_player_size = rl.Vector2{ .x = 40, .y = 60 };
 
 const PlayerAnimState = enum {
     IDLE1,
@@ -46,13 +46,8 @@ pub const Player = struct {
             self.vel.x = 0;
         }
         
-        if(im.getHoldKey(.UP)) {
-            self.vel.y = -self.speed;
-        } else if(im.getHoldKey(.DOWN)) {
-            self.vel.y = self.speed;
-        } else {
-            self.vel.y = 0;
-        }
+        if(self.vel.y < 15) self.vel.y += 0.5 * main.dt;
+        if(im.getPressKey(.JUMP) and self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)]) self.vel.y = -10;
         
         self.pos.x += self.vel.x * main.dt;
         self.manageCollisions(true);
@@ -101,6 +96,7 @@ pub const Player = struct {
     
     fn collideY(self: *Player, tile: mm.Tile, direction: CollisionDirectionY) void {
         self.collisionsY[@intFromEnum(direction)] = true;
+        self.vel.y = 0.1;
         switch (direction) {
             CollisionDirectionY.UP => self.pos.y = tile.rect.y + tile.rect.height,
             CollisionDirectionY.DOWN => self.pos.y = tile.rect.y - def_player_size.y,
