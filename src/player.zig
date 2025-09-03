@@ -124,7 +124,7 @@ pub const Player = struct {
 };
 
 pub fn loadPlayer() void {
-    player_atlas = rl.loadTexture("res/player_atlas.png") catch ch.crash(.RAYLIB_ERROR);
+    player_atlas = rl.loadTexture("res/sprite/player_atlas.png") catch ch.crash(.RAYLIB_ERROR);
 }
 
 pub fn unloadPlayer() void {

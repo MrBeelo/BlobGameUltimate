@@ -87,7 +87,7 @@ pub fn drawMap(map: Map) void {
 
 pub fn loadTileAtlas() void {
     test_tile_atlas = TileAtlas{
-        .texture = rl.loadTexture("res/map_atlas.png") catch ch.crash(.RAYLIB_ERROR),
+        .texture = rl.loadTexture("res/sprite/map_atlas.png") catch ch.crash(.RAYLIB_ERROR),
         .atlas_tile_size = 32,
         .atlas_width = 8
     };
