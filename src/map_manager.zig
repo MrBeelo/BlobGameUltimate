@@ -52,8 +52,12 @@ pub fn loadMap(path: []const u8) !Map {
     const tile_size = @as(f32, @floatFromInt(parsed_map.get("tilewidth").?.integer));
     
     const data_array = layers_val.get("data").?.array;
-    var data = try main.allocator.alloc(Tile, data_array.items.len);
     
+    var air_tiles: usize = 0;
+    for(data_array.items) |tile| { if(tile.integer == -1) air_tiles += 1; }
+    var data = try main.allocator.alloc(Tile, data_array.items.len - air_tiles);
+    
+    var variable_index: usize = 0;
     for(data_array.items, 0..) |d_array, index| {
         const texture_number = @as(i32, @intCast(d_array.integer));
         const tile_type: TileType = switch(texture_number) {
@@ -61,11 +65,14 @@ pub fn loadMap(path: []const u8) !Map {
             else => .AIR
         };
         
-        data[index] = Tile{
-            .rect = .{ .x = @mod(@as(f32, @floatFromInt(index)), map_size.x) * tile_size, .y = @floor(@as(f32, @floatFromInt(index)) / map_size.x) * tile_size, .width = tile_size, .height = tile_size },
-            .type = tile_type,
-            .texture_number = texture_number
-        };
+        if(tile_type != .AIR) {
+            data[variable_index] = Tile{
+                .rect = .{ .x = @mod(@as(f32, @floatFromInt(index)), map_size.x) * tile_size, .y = @floor(@as(f32, @floatFromInt(index)) / map_size.x) * tile_size, .width = tile_size, .height = tile_size },
+                .type = tile_type,
+                .texture_number = texture_number
+            };
+            variable_index += 1;
+        }
     }
     
     return Map{ .map_size = map_size, .tile_size = tile_size, .data = data };
@@ -75,7 +82,6 @@ pub fn drawMap(map: Map) void {
     for(map.data) |tile| {
         const src_rect = rl.Rectangle{ .x = @as(f32, @floatFromInt(@mod(tile.texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .y = @as(f32, @floatFromInt(@divFloor(tile.texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .width = test_tile_atlas.atlas_tile_size, .height = test_tile_atlas.atlas_tile_size };
         rl.drawTexturePro(test_tile_atlas.texture, src_rect, tile.rect, .zero(), 0, .white);
-        if(main.f3 and tile.type == .SOLID) rl.drawRectangleLinesEx(tile.rect, 3, .red);
     }
 }
 

@@ -36,5 +36,7 @@ pub fn main() anyerror!void {
         
         mm.drawMap(test_map);
         player.draw();
+        
+        if(f3) rl.drawText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch ch.crash(.OUT_OF_MEMORY), 10, 10, 32, .black);
     }
 }
