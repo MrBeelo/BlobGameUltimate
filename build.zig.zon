@@ -1,0 +1,17 @@
+.{
+    .name = .BlobGameUltimate,
+    .version = "0.0.1",
+    .fingerprint = 0xb2975a99524203cf,
+    .minimum_zig_version = "0.15.1",
+    .dependencies = .{
+        .raylib_zig = .{
+            .path = "raylib-zig",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "README.md",
+    },
+}

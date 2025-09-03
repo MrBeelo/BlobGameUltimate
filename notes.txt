@@ -1,0 +1,18 @@
+Blob Game: Ultimate Notes
+Hey me! Here are some notes/ todos for the game. Good luck I guess? ( Writing on 2/9/25)
+
+// IDEAS //
+Some sort of sword
+A new art style, along with the old 2 ones
+Enemies becoming sad face when hit with sword, also blinking red/white
+A total of 5 bosses, 3 attacks each, with final boss being either giant cube or beelo
+50 levels 0_0 ( way easier tho)
+Custom framework for hitboxes
+Backgrounds
+
+// TODOS // 
+Make a couple of maps
+Add sword (not priority)
+Add health system
+Add collectible
+Add savefile
