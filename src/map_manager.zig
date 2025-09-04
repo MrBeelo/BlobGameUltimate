@@ -16,7 +16,8 @@ pub const TileType = enum {
 };
 
 pub const Tile = struct {
-    rect: rl.Rectangle,
+    src_rect: rl.Rectangle,
+    dest_rect: rl.Rectangle,
     type: TileType,
     texture_number: i32
 };
@@ -67,7 +68,8 @@ pub fn loadMap(path: []const u8) !Map {
         
         if(tile_type != .AIR) {
             data[variable_index] = Tile{
-                .rect = .{ .x = @mod(@as(f32, @floatFromInt(index)), map_size.x) * tile_size, .y = @floor(@as(f32, @floatFromInt(index)) / map_size.x) * tile_size, .width = tile_size, .height = tile_size },
+                .src_rect = .{ .x = @as(f32, @floatFromInt(@mod(texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .y = @as(f32, @floatFromInt(@divFloor(texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .width = test_tile_atlas.atlas_tile_size, .height = test_tile_atlas.atlas_tile_size },
+                .dest_rect = .{ .x = @mod(@as(f32, @floatFromInt(index)), map_size.x) * tile_size, .y = @floor(@as(f32, @floatFromInt(index)) / map_size.x) * tile_size, .width = tile_size, .height = tile_size },
                 .type = tile_type,
                 .texture_number = texture_number
             };
@@ -80,8 +82,7 @@ pub fn loadMap(path: []const u8) !Map {
 
 pub fn drawMap(map: Map) void {
     for(map.data) |tile| {
-        const src_rect = rl.Rectangle{ .x = @as(f32, @floatFromInt(@mod(tile.texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .y = @as(f32, @floatFromInt(@divFloor(tile.texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .width = test_tile_atlas.atlas_tile_size, .height = test_tile_atlas.atlas_tile_size };
-        rl.drawTexturePro(test_tile_atlas.texture, src_rect, tile.rect, .zero(), 0, .white);
+        if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = main.camera.target.x - main.camera.offset.x, .y = main.camera.target.y - main.camera.offset.y, .width = @floatFromInt(rl.getScreenWidth()), .height = @floatFromInt(rl.getScreenHeight()) })) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
     }
 }
 

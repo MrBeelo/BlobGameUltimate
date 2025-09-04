@@ -15,7 +15,7 @@ pub var test_map: mm.Map = undefined;
 pub var player: pl.Player = undefined;
 pub var camera: rl.Camera2D = undefined;
 
-pub fn main() anyerror!void {
+pub fn main() void {
     rl.initWindow(sim_size.x, sim_size.y, "Blob Game: Ultimate");
     defer rl.closeWindow();
     

@@ -6,7 +6,7 @@ Some sort of sword
 A new art style, along with the old 2 ones
 Enemies becoming sad face when hit with sword, also blinking red/white
 A total of 5 bosses, 3 attacks each, with final boss being either giant cube or beelo
-50 levels 0_0 ( way easier tho)
+50 levels 0_0 (way easier tho)
 Custom framework for hitboxes
 Backgrounds
 
