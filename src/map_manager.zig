@@ -3,6 +3,8 @@ const rl = @import("raylib");
 const ch = @import("crash_handler.zig");
 const pl = @import("player.zig");
 const main = @import("main.zig");
+const cm = @import("camera_manager.zig");
+const sm = @import("screen_manager.zig");
 
 pub const TileAtlas = struct {
     texture: rl.Texture2D,
@@ -82,7 +84,7 @@ pub fn loadMap(path: []const u8) !Map {
 
 pub fn drawMap(map: Map) void {
     for(map.data) |tile| {
-        if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = main.camera.target.x - main.camera.offset.x, .y = main.camera.target.y - main.camera.offset.y, .width = @floatFromInt(rl.getScreenWidth()), .height = @floatFromInt(rl.getScreenHeight()) })) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
+        if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cm.camera.target.x - cm.camera.offset.x, .y = cm.camera.target.y - cm.camera.offset.y, .width = sm.sim_size.x, .height = sm.sim_size.y })) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
     }
 }
 
