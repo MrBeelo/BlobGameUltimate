@@ -4,7 +4,7 @@ const main = @import("main.zig");
 const ch = @import("crash_handler.zig");
 
 pub const sim_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
-pub var window_size: rl.Vector2 = .{ .x = 800, .y = 450 };
+pub var window_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
 pub var target: rl.RenderTexture2D = undefined;
 var target_scale: f32 = undefined;
 
