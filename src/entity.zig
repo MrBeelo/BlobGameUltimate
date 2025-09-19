@@ -18,6 +18,15 @@ pub const CollisionDirectionY = enum {
     NONE
 };
 
+pub const DefaultAnimState = enum {
+    IDLE1,
+    IDLE2,
+    WALK1,
+    WALK2,
+    JUMP1,
+    JUMP2
+};
+
 pub const EntityData = struct {
     pos: rl.Vector2 = .{ .x = 0, .y = 0 },
     size: rl.Vector2,
@@ -26,6 +35,8 @@ pub const EntityData = struct {
     collisionsY: [2]bool = .{ false, false },
     speed: f32 = 3,
     last_direction_right: bool = true,
+    anim_state: DefaultAnimState = .IDLE1,
+    leg_move_toggle: bool = false,
     
     pub fn update(self: *EntityData) void {
         if(self.vel.y < 15) self.vel.y += 0.5 * main.dt;
@@ -94,8 +105,7 @@ pub const EntityData = struct {
     }
     
     pub fn manageCollisions(self: *EntityData, horizontal: bool) void {
-        self.collisionsX = [_]bool{ false } ** 2;
-        self.collisionsY = [_]bool{ false } ** 2;
+        if(horizontal) self.collisionsX = [_]bool{ false } ** 2 else self.collisionsY = [_]bool{ false } ** 2;
         
         for (main.test_map.data) |tile| {
             switch (tile.type) {
@@ -108,6 +118,31 @@ pub const EntityData = struct {
                     }
                 }
             }
+        }
+    }
+    
+    pub fn handleBaseAnims(self: *EntityData) void {
+        if(self.vel.x == 0) {
+            self.anim_state = if(self.anim_state == .IDLE1) .IDLE2 else .IDLE1;
+        } else {
+            if(self.anim_state == .WALK1 or self.anim_state == .WALK2) {
+                self.anim_state = .IDLE1;
+            } else if(self.anim_state == .IDLE1) {
+                self.anim_state = if(self.leg_move_toggle) .WALK1 else .WALK2;
+                self.leg_move_toggle = !self.leg_move_toggle;
+            }
+        }
+    }
+    
+    pub fn handleAnimEdgeCases(self: *EntityData) void {
+        if(!self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)]) {
+            self.anim_state = if(self.vel.y < -2.5 or self.vel.y > 2.5) .JUMP1 else .JUMP2;
+        } else if(self.anim_state == .JUMP1 or self.anim_state == .JUMP2) {
+            self.anim_state = if(self.vel.x == 0) .IDLE1 else .WALK1;
+        } else if(self.anim_state == .WALK1 or self.anim_state == .WALK2) {
+            if(self.vel.x == 0) self.anim_state = .IDLE1;
+        } else if(self.anim_state == .IDLE2) {
+            if(self.vel.x != 0) self.anim_state = .IDLE1;
         }
     }
 };
