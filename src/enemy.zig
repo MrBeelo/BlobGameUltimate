@@ -8,7 +8,8 @@ const ti = @import("timer.zig");
 const ent = @import("entity.zig");
 
 var circle_atlas: rl.Texture2D = undefined;
-pub const def_circle_size = rl.Vector2{ .x = 40, .y = 60 };
+var triangle_atlas: rl.Texture2D = undefined;
+pub var enemies: std.array_list.Managed(Enemy) = undefined;
 
 const EnemyType = enum {
     CIRCLE,
@@ -17,37 +18,30 @@ const EnemyType = enum {
 };
 
 pub const Enemy = struct {
-    data: ent.EntityData = .{ .size = def_circle_size }, //CHANGE CHNAGE
+    data: ent.EntityData,
     type: EnemyType = .CIRCLE,
-    detection_radius: f32 = 350,
+    texture: rl.Texture2D,
+    detection_radius: f32,
     animation_timer: ti.Timer = .{ .auto_start = true, .duration = 0.3, .repeat = true },
     direction_timer: ti.Timer = .{ .auto_start = true, .duration = 2, .repeat = true },
     idle_direction_right: bool = true,
     
-    pub fn update(self: *Enemy) void {
-        if(!self.animation_timer.active) self.animation_timer.init(); // would like to do another way but whatever
-        if(!self.direction_timer.active) self.direction_timer.init();
-        
+    pub fn update(self: *Enemy) void {  
         self.runAI();
-        
         self.data.update();
-        
-        self.animation_timer.update();
-        if(self.animation_timer.called) self.data.handleBaseAnims();
-        self.data.handleAnimEdgeCases();
+        self.data.updateAnimations(&self.animation_timer);
     }
     
     pub fn draw(self: *Enemy) void {
         const flip: f32 = if(self.data.last_direction_right) 1 else -1;
-        //change circle_atlas to atlas based on type
-        rl.drawTexturePro(circle_atlas, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
+        rl.drawTexturePro(self.texture, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
             self.data.getRect(), .zero(), 0, .white);
-        if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .orange);
+        if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .red);
     }
     
-    fn playerClose(self: *Enemy) bool {
+    pub fn playerClose(self: *Enemy) bool {
         const player = main.player.data;
-        if(player.pos.x - self.data.pos.x >= -self.detection_radius and self.data.pos.x - player.pos.x <= self.detection_radius and player.pos.y - self.data.pos.y >= -self.detection_radius and self.data.pos.y - player.pos.y <= self.detection_radius) return true;
+        if(player.pos.x - self.data.pos.x >= -self.detection_radius and player.pos.x - self.data.pos.x < self.detection_radius and player.pos.y - self.data.pos.y >= -self.detection_radius and player.pos.y - self.data.pos.y < self.detection_radius) return true;
         return false;
     }
     
@@ -72,13 +66,50 @@ pub const Enemy = struct {
 };
 
 pub fn loadEnemies() void {
+    enemies = std.array_list.Managed(Enemy).init(main.allocator);
     circle_atlas = rl.loadTexture("res/sprite/circle_atlas.png") catch ch.crash(.RAYLIB_ERROR);
+    triangle_atlas = rl.loadTexture("res/sprite/triangle_atlas.png") catch ch.crash(.RAYLIB_ERROR);
 }
 
 pub fn unloadEnemies() void {
+    enemies.deinit();
     rl.unloadTexture(circle_atlas);
+    rl.unloadTexture(triangle_atlas);
 }
 
-pub fn newEnemy() Enemy {
-    return Enemy{ .data = .{ .pos = .{ .x = 590, .y = 10 }, .size = def_circle_size, .speed = 2 } }; //NO!!!!!!!!!!
+pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
+    const size: rl.Vector2 = switch (ent_type) {
+        .CIRCLE => .{ .x = 40, .y = 60 },
+        .TRIANGLE => .{ .x = 40, .y = 60 },
+        .TRIANGLE_BOSS => .{ .x = 40, .y = 60 }
+    };
+    
+    const speed: f32 = switch (ent_type) {
+        .CIRCLE => 1.2,
+        .TRIANGLE => 2,
+        .TRIANGLE_BOSS => 2.4
+    };
+    
+    const texture: rl.Texture2D = switch (ent_type) {
+        .CIRCLE => circle_atlas,
+        .TRIANGLE => triangle_atlas,
+        .TRIANGLE_BOSS => triangle_atlas
+    };
+    
+    const detection_radius: f32 = switch (ent_type) {
+        .CIRCLE => 200,
+        .TRIANGLE => 350,
+        .TRIANGLE_BOSS => 400
+    };
+    
+    var enemy = Enemy{ .data = .{ .pos = pos, .size = size, .speed = speed }, .texture = texture, .detection_radius = detection_radius };   
+    
+    enemy.animation_timer.init();
+    enemy.direction_timer.init();
+    
+    return enemy;
+}
+
+pub fn summonEnemy(ent_type: EnemyType, pos: rl.Vector2) void {
+    enemies.append(newEnemy(ent_type, pos)) catch ch.crash(.OUT_OF_MEMORY);
 }

@@ -14,7 +14,6 @@ pub var dt: f32 = 0;
 pub var f3 = false;
 pub var test_map: mm.Map = undefined;
 pub var player: pl.Player = undefined;
-pub var circle: ene.Enemy = undefined; //THIS IS SHHHHIIIIIIIIIIIIIIIIIIIIIITTTTTT!!!!
 
 pub fn main() void {
     rl.setConfigFlags(.{ .window_resizable = true });
@@ -27,7 +26,8 @@ pub fn main() void {
     
     ene.loadEnemies();
     defer ene.unloadEnemies();
-    circle = ene.newEnemy();
+    ene.summonEnemy(.CIRCLE, .{ .x = 590, .y = 10 });
+    ene.summonEnemy(.TRIANGLE, .{ .x = 890, .y = 10 });
     
     mm.loadTileAtlas();
     defer mm.unloadTileAtlas();
@@ -38,7 +38,7 @@ pub fn main() void {
     
     while (!rl.windowShouldClose()) {
         dt = rl.getFrameTime() * sim_fps;
-        circle.update();
+        for(ene.enemies.items) |*enemy| enemy.update();
         player.update();
         
         im.updateInputManager();
@@ -52,7 +52,7 @@ pub fn main() void {
         
         rl.beginMode2D(cm.camera);
         mm.drawMap(test_map);
-        circle.draw();
+        for(ene.enemies.items) |*enemy| enemy.draw();
         player.draw();
         rl.endMode2D();
         

@@ -10,25 +10,17 @@ const ent = @import("entity.zig");
 var player_atlas: rl.Texture2D = undefined;
 pub const def_player_size = rl.Vector2{ .x = 40, .y = 60 };
 var animation_timer: ti.Timer = ti.Timer{ .auto_start = true, .duration = 0.3, .repeat = true };
+pub const base_health: f32 = 100;
 
 pub const Player = struct {
     data: ent.EntityData = .{ .size = def_player_size },
     
     pub fn update(self: *Player) void {
-        if(im.getHoldKey(.LEFT)) {
-            self.data.moveLeft();
-        } else if(im.getHoldKey(.RIGHT)) {
-            self.data.moveRight();
-        } else {
-            self.data.vel.x = 0;
-        }
-        
+        if(im.getHoldKey(.LEFT)) self.data.moveLeft() else if(im.getHoldKey(.RIGHT)) self.data.moveRight() else self.data.vel.x = 0;
         if(im.getPressKey(.JUMP)) self.data.jump();
-        self.data.update();
         
-        animation_timer.update();
-        if(animation_timer.called) self.data.handleBaseAnims();
-        self.data.handleAnimEdgeCases();
+        self.data.update();
+        self.data.updateAnimations(&animation_timer);
     }
     
     pub fn draw(self: *Player) void {
@@ -49,6 +41,6 @@ pub fn unloadPlayer() void {
 }
 
 pub fn newPlayer() Player {
-    return Player{ .data = .{ .pos = .{ .x = 10, .y = 10 }, .size = def_player_size } }; //THIS SUCKS! MAKE CUSTOM SPAWN POINTSD
+    return Player{ .data = .{ .pos = .{ .x = 10, .y = 10 }, .size = def_player_size, .speed = 3.5, .health = base_health } }; //THIS SUCKS! MAKE CUSTOM SPAWN POINTSD
 }
 

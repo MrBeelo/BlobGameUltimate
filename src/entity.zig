@@ -37,6 +37,7 @@ pub const EntityData = struct {
     last_direction_right: bool = true,
     anim_state: DefaultAnimState = .IDLE1,
     leg_move_toggle: bool = false,
+    health: f32 = 5,
     
     pub fn update(self: *EntityData) void {
         if(self.vel.y < 15) self.vel.y += 0.5 * main.dt;
@@ -144,5 +145,15 @@ pub const EntityData = struct {
         } else if(self.anim_state == .IDLE2) {
             if(self.vel.x != 0) self.anim_state = .IDLE1;
         }
+    }
+    
+    pub fn updateAnimations(self: *EntityData, animation_timer: *ti.Timer) void {
+        animation_timer.update();
+        if(animation_timer.called) self.handleBaseAnims();
+        self.handleAnimEdgeCases();
+    }
+    
+    pub fn getHit(self: *EntityData, damage: f32) void {
+        self.health -= damage;
     }
 };
