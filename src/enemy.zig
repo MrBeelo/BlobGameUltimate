@@ -6,6 +6,7 @@ const im = @import("input_manager.zig");
 const mm = @import("map_manager.zig");
 const ti = @import("timer.zig");
 const ent = @import("entity.zig");
+const pl = @import("player.zig");
 
 var circle_atlas: rl.Texture2D = undefined;
 var triangle_atlas: rl.Texture2D = undefined;
@@ -25,11 +26,16 @@ pub const Enemy = struct {
     animation_timer: ti.Timer = .{ .auto_start = true, .duration = 0.3, .repeat = true },
     direction_timer: ti.Timer = .{ .auto_start = true, .duration = 2, .repeat = true },
     idle_direction_right: bool = true,
+    damage_dealt: f32 = 10,
     
     pub fn update(self: *Enemy) void {  
         self.runAI();
         self.data.update();
         self.data.updateAnimations(&self.animation_timer);
+        if(self.data.getRect().checkCollision(main.player.data.getRect()) and !main.player.immunity_timer.active) {
+            main.player.data.health -= self.damage_dealt;
+            main.player.immunity_timer.activate();
+        }
     }
     
     pub fn draw(self: *Enemy) void {
@@ -51,7 +57,7 @@ pub const Enemy = struct {
         self.direction_timer.update();
         if(self.direction_timer.called) self.idle_direction_right = !self.idle_direction_right;
         
-        if(self.data.collisionsX[0] or self.data.collisionsX[1]) {
+        if(self.data.collisionsX[@intFromEnum(ent.CollisionDirectionX.LEFT)] or self.data.collisionsX[@intFromEnum(ent.CollisionDirectionX.RIGHT)]) {
             const rand = rl.getRandomValue(0, 2);
             if(rand != 0) self.idle_direction_right = !self.idle_direction_right else self.data.jump();
             self.direction_timer.start_time = @floatCast(rl.getTime());
@@ -90,6 +96,12 @@ pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
         .TRIANGLE_BOSS => 2.4
     };
     
+    const health: f32 = switch (ent_type) {
+        .CIRCLE => 30,
+        .TRIANGLE => 20,
+        .TRIANGLE_BOSS => 1000
+    };
+    
     const texture: rl.Texture2D = switch (ent_type) {
         .CIRCLE => circle_atlas,
         .TRIANGLE => triangle_atlas,
@@ -102,7 +114,13 @@ pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
         .TRIANGLE_BOSS => 400
     };
     
-    var enemy = Enemy{ .data = .{ .pos = pos, .size = size, .speed = speed }, .texture = texture, .detection_radius = detection_radius };   
+    const damage_dealt: f32 = switch (ent_type) {
+        .CIRCLE => 10,
+        .TRIANGLE => 20,
+        .TRIANGLE_BOSS => 30
+    };
+    
+    var enemy = Enemy{ .data = .{ .pos = pos, .size = size, .speed = speed, .health = health }, .texture = texture, .detection_radius = detection_radius, .damage_dealt = damage_dealt };   
     
     enemy.animation_timer.init();
     enemy.direction_timer.init();

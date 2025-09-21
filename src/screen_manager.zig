@@ -7,6 +7,7 @@ pub const sim_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
 pub var window_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
 pub var target: rl.RenderTexture2D = undefined;
 var target_scale: f32 = undefined;
+pub const ui_buffer: f32 = 10;
 
 pub fn initTarget() void {
     target = rl.loadRenderTexture(sim_size.x, sim_size.y) catch ch.crash(.RAYLIB_ERROR);

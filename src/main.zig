@@ -56,7 +56,9 @@ pub fn main() void {
         player.draw();
         rl.endMode2D();
         
+        player.drawHealthBar();
         if(f3) rl.drawText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch ch.crash(.OUT_OF_MEMORY), 10, 10, 32, .black);
+        if(f3) rl.drawText(std.fmt.allocPrintSentinel(allocator, "Player Health: {d:.0}", .{player.data.health}, 0) catch ch.crash(.OUT_OF_MEMORY), 10, 50, 32, .black);
         rl.endTextureMode();
         
         rl.beginDrawing();
