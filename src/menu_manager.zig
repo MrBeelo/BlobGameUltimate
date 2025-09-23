@@ -56,12 +56,6 @@ pub const Button = struct {
     }
 };
 
-pub fn newCenteredButton(font_size: f32, button_type: ButtonType, text: [:0]const u8, y_pos: f32) Button {
-    var button: Button = .{ .font_size = font_size, .text = text, .button_type = button_type };
-    button.pos = .{ .x = sm.sim_size.x / 2 - button.getSize().x / 2, .y = y_pos };
-    return button;
-}
-
 pub const Menu = struct {
     buttons: []Button,
     is_gameplay_menu: bool = false,
@@ -106,7 +100,7 @@ var button_array = [_]Button{
     Button{ .button_type = .{ .exit = true}, .pos = .{ .x = sm.sim_size.x / 2, .y = 180 }, .text = "EXIT" },
 };
 
-var menus: [2]Menu = [_]Menu{
+var menus: [@typeInfo(GameState).@"enum".fields.len]Menu = [_]Menu{
     // PLAYING
     Menu{ .buttons = &[_]Button{}, .is_gameplay_menu = true },
     
