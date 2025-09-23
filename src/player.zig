@@ -40,6 +40,10 @@ pub const Player = struct {
         rl.drawRectangleRoundedLinesEx(.{ .x = sm.ui_buffer, .y = sm.ui_buffer, .width = 4 * base_player_health, .height = 40 }, 0.7, 100, 5, .black);
         rl.drawText(std.fmt.allocPrintSentinel(main.allocator, "{d:.0}/{d:.0}", .{self.data.health, base_player_health}, 0) catch ch.crash(.OUT_OF_MEMORY), sm.ui_buffer * 2, sm.ui_buffer * 2, 24, .black);
     }
+    
+    pub fn reset(self: *Player) void {
+        _ = self; //temporary
+    }
 };
 
 pub fn loadPlayer() void {
