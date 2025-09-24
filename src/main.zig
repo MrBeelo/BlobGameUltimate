@@ -39,6 +39,8 @@ pub fn main() void {
     cm.initCamera();
     sm.initTarget();
     
+    mem.initMenus();
+    
     while (!rl.windowShouldClose() and !should_exit) {
         dt = rl.getFrameTime() * sim_fps;
         im.updateInputManager();

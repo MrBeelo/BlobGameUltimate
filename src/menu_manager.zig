@@ -95,21 +95,25 @@ pub const Menu = struct {
     }
 };
 
+var menus: [@typeInfo(GameState).@"enum".fields.len]Menu = undefined;
+
 var button_array = [_]Button{
     Button{ .button_type = .{ .change_game_state = .PLAYING }, .pos = .{ .x = sm.sim_size.x / 2, .y = 100 }, .text = "PLAY" },
     Button{ .button_type = .{ .exit = true}, .pos = .{ .x = sm.sim_size.x / 2, .y = 180 }, .text = "EXIT" },
 };
 
-var menus: [@typeInfo(GameState).@"enum".fields.len]Menu = [_]Menu{
-    // PLAYING
-    Menu{ .buttons = &[_]Button{}, .is_gameplay_menu = true },
-    
-    // MAIN
-    Menu{ 
-        .buttons = button_array[0..], 
-        .top_text = "MAIN MENU"
-    }
-};
+pub fn initMenus() void {
+    menus = [_]Menu{
+        // PLAYING
+        Menu{ .buttons = &[_]Button{}, .is_gameplay_menu = true },
+        
+        // MAIN
+        Menu{ 
+            .buttons = button_array[0..], 
+            .top_text = "MAIN MENU"
+        }
+    };
+}
 
 pub fn updateMenus() void {
     menus[@intFromEnum(main.game_state)].update();
