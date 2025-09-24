@@ -91,25 +91,35 @@ pub const Menu = struct {
     pub fn draw(self: *Menu) void {
         for(self.buttons) |*button| button.draw();
         //obviously replace when you add fonts
-        rl.drawText(self.top_text, @as(i32, @intFromFloat(sm.sim_size.x / 2)) - rl.measureText(self.top_text, self.top_text_font_size), 50, self.top_text_font_size, self.top_text_color);
+        rl.drawText(self.top_text, @as(i32, @intFromFloat(sm.sim_size.x / 2)) - @divFloor(rl.measureText(self.top_text, self.top_text_font_size), 2), 50, self.top_text_font_size, self.top_text_color);
     }
 };
 
 var menus: [@typeInfo(GameState).@"enum".fields.len]Menu = undefined;
 
-var button_array = [_]Button{
-    Button{ .button_type = .{ .change_game_state = .PLAYING }, .pos = .{ .x = sm.sim_size.x / 2, .y = 100 }, .text = "PLAY" },
-    Button{ .button_type = .{ .exit = true}, .pos = .{ .x = sm.sim_size.x / 2, .y = 180 }, .text = "EXIT" },
-};
+fn mutateButtons(buttons: []const Button) []Button {
+    const mut_buttons = main.allocator.alloc(Button, buttons.len) catch ch.crash(.OUT_OF_MEMORY);
+    std.mem.copyForwards(Button, mut_buttons, buttons);
+    return mut_buttons;
+}
+
+fn createButton(text: [:0]const u8, font_size: f32, button_type: ButtonType, y_pos: f32) Button {
+    var button = Button{ .button_type = button_type, .text = text, .font_size = font_size, .pos = .zero() };
+    button.pos = .{ .x = sm.sim_size.x / 2 - button.getSize().x / 2, .y = y_pos };
+    return button;
+}
 
 pub fn initMenus() void {
     menus = [_]Menu{
         // PLAYING
-        Menu{ .buttons = &[_]Button{}, .is_gameplay_menu = true },
+        Menu{ .buttons = mutateButtons(&[_]Button{}), .is_gameplay_menu = true },
         
         // MAIN
         Menu{ 
-            .buttons = button_array[0..], 
+            .buttons = mutateButtons(&[_]Button{
+                createButton("PLAY", 32, .{ .change_game_state = .PLAYING }, 140),
+                createButton("EXIT", 32, .{ .exit = true }, 220)
+            }), 
             .top_text = "MAIN MENU"
         }
     };
