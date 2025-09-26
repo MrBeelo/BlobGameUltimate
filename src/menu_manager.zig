@@ -8,6 +8,7 @@ const cm = @import("camera_manager.zig");
 const sm = @import("screen_manager.zig");
 const ene = @import("enemy.zig");
 const main = @import("main.zig");
+const tm = @import("text_manager.zig");
 
 pub const GameState = enum {
     PLAYING,
@@ -37,7 +38,7 @@ pub const Button = struct {
     }
     
     pub fn getSize(self: *Button) rl.Vector2 {
-        const button_width = @as(f32, @floatFromInt(rl.measureText(self.text, @intFromFloat(self.font_size)))) + sm.ui_buffer * 2; //change when you add custom fonts
+        const button_width = tm.measureCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size).x + sm.ui_buffer * 2;
         const button_height = self.font_size + sm.ui_buffer * 2;
         return rl.Vector2{ .x = button_width, .y = button_height };
     }
@@ -52,7 +53,8 @@ pub const Button = struct {
     
     pub fn draw(self: *Button) void {
         rl.drawRectangleLinesEx(self.getRect(), 3, self.color);
-        rl.drawText(self.text, @intFromFloat(self.getRect().x + sm.ui_buffer), @intFromFloat(self.getRect().y + sm.ui_buffer), @intFromFloat(self.font_size), self.color);
+        //rl.drawText(self.text, @intFromFloat(self.getRect().x + sm.ui_buffer), @intFromFloat(self.getRect().y + sm.ui_buffer), @intFromFloat(self.font_size), self.color);
+        tm.drawCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size, .{ .x = self.getRect().x + sm.ui_buffer, .y = self.getRect().y + sm.ui_buffer }, self.color);
     }
 };
 
@@ -61,7 +63,7 @@ pub const Menu = struct {
     is_gameplay_menu: bool = false,
     selected_button_index: i32 = 0,
     top_text: [:0]const u8 = "TOP TEXT PLACEHOLDER",
-    top_text_font_size: i32 = 64,
+    top_text_font_size: f32 = 64,
     top_text_color: rl.Color = .black,
     
     pub fn update(self: *Menu) void {
@@ -90,8 +92,8 @@ pub const Menu = struct {
     
     pub fn draw(self: *Menu) void {
         for(self.buttons) |*button| button.draw();
-        //obviously replace when you add fonts
-        rl.drawText(self.top_text, @as(i32, @intFromFloat(sm.sim_size.x / 2)) - @divFloor(rl.measureText(self.top_text, self.top_text_font_size), 2), 50, self.top_text_font_size, self.top_text_color);
+        //maybe make a custom logo for main menu?
+        tm.drawCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size, .{ .x = sm.sim_size.x / 2 - tm.measureCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size).x / 2, .y = 50 }, self.top_text_color);
     }
 };
 

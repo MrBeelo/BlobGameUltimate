@@ -8,6 +8,7 @@ const cm = @import("camera_manager.zig");
 const sm = @import("screen_manager.zig");
 const ene = @import("enemy.zig");
 const mem = @import("menu_manager.zig");
+const tm = @import("text_manager.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -22,6 +23,11 @@ pub fn main() void {
     rl.setConfigFlags(.{ .window_resizable = true });
     rl.initWindow(@intFromFloat(sm.window_size.x), @intFromFloat(sm.window_size.y), "Blob Game: Ultimate");
     defer rl.closeWindow();
+    
+    rl.setExitKey(.null);
+    
+    tm.loadFonts();
+    defer tm.unloadFonts();
     
     pl.loadPlayer();
     defer pl.unloadPlayer();
