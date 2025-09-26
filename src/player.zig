@@ -6,6 +6,7 @@ const inp = @import("input.zig");
 const ti = @import("timer.zig");
 const ent = @import("entity.zig");
 const scr = @import("screen.zig");
+const men = @import("menu.zig");
 
 var player_atlas: rl.Texture2D = undefined;
 pub const def_player_size = rl.Vector2{ .x = 40, .y = 60 };
@@ -25,6 +26,7 @@ pub const Player = struct {
         self.data.updateAnimations(&self.animation_timer);
         self.immunity_timer.update();
         self.color = if(self.immunity_timer.active) rl.Color{ .r = 255, .g = 255, .b = 255, .a = 125 } else .white;
+        if(self.data.health <= 0) men.changeGameState(.DIED);
     }
     
     pub fn draw(self: *Player) void {
@@ -41,7 +43,10 @@ pub const Player = struct {
     }
     
     pub fn reset(self: *Player) void {
-        _ = self; //temporary
+        self.data.pos = .{ .x = 10, .y = 10 }; //CHANGE WHEN YOU ADD CUSTOM SPAWN POINTS
+        self.data.vel = .zero();
+        self.immunity_timer.activate();
+        self.data.health = base_player_health;
     }
 };
 

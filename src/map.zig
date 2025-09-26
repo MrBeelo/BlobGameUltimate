@@ -81,6 +81,11 @@ pub fn loadMap(path: []const u8) !Map {
     return Map{ .map_size = map_size, .tile_size = tile_size, .data = data };
 }
 
+pub fn resetMap() void {
+    main.player.reset();
+    //RESET ALL ENTITIES HERE
+}
+
 pub fn drawMap(map: Map) void {
     for(map.data) |tile| {
         if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cam.camera.target.x - cam.camera.offset.x, .y = cam.camera.target.y - cam.camera.offset.y, .width = scr.sim_size.x, .height = scr.sim_size.y })) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);

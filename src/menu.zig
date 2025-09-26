@@ -5,6 +5,7 @@ const inp = @import("input.zig");
 const scr = @import("screen.zig");
 const main = @import("main.zig");
 const txt = @import("text.zig");
+const map = @import("map.zig");
 
 pub const GameState = enum {
     PLAYING,
@@ -20,7 +21,7 @@ pub const ButtonType = union(enum) {
     reset_player: bool,
 };
 
-fn changeGameState(game_state: GameState) void {
+pub fn changeGameState(game_state: GameState) void {
     main.game_state = game_state;
     menus[@intFromEnum(game_state)].selected_button_index = 0;
 }
@@ -37,7 +38,10 @@ pub const Button = struct {
         switch (self.button_type) {
             .change_game_state => |game_state| changeGameState(game_state),
             .exit => main.should_exit = true,
-            .reset_player => main.player.reset()
+            .reset_player => {
+                map.resetMap();
+                changeGameState(.PLAYING);
+            }
         }
     }
     
@@ -132,7 +136,7 @@ pub fn initMenus() void {
         // MAIN
         Menu{ 
             .buttons = mutateButtons(&[_]Button{
-                createDefaultButton("PLAY", .{ .change_game_state = .PLAYING }, 0),
+                createDefaultButton("PLAY", .{ .reset_player = true }, 0),
                 createDefaultButton("EXIT", .{ .change_game_state = .EXIT }, 1)
             }), 
             .top_text = "BLOB GAME: ULTIMATE"
@@ -150,7 +154,7 @@ pub fn initMenus() void {
         // DIED
         Menu{ 
             .buttons = mutateButtons(&[_]Button{
-                createDefaultButton("TRY AGAIN", .{ .change_game_state = .PLAYING }, 0),
+                createDefaultButton("TRY AGAIN", .{ .reset_player = true }, 0),
                 createDefaultButton("BACK TO MAIN MENU", .{ .change_game_state = .MAIN }, 1)
             }), 
             .top_text = "YOU DIED",
