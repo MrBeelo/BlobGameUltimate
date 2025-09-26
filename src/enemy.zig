@@ -1,9 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const main = @import("main.zig");
-const ch = @import("crash_handler.zig");
-const im = @import("input_manager.zig");
-const mm = @import("map_manager.zig");
+const crsh = @import("crash.zig");
 const ti = @import("timer.zig");
 const ent = @import("entity.zig");
 const pl = @import("player.zig");
@@ -73,8 +71,8 @@ pub const Enemy = struct {
 
 pub fn loadEnemies() void {
     enemies = std.array_list.Managed(Enemy).init(main.allocator);
-    circle_atlas = rl.loadTexture("res/sprite/circle_atlas.png") catch ch.crash(.RAYLIB_ERROR);
-    triangle_atlas = rl.loadTexture("res/sprite/triangle_atlas.png") catch ch.crash(.RAYLIB_ERROR);
+    circle_atlas = rl.loadTexture("res/sprite/circle_atlas.png") catch crsh.crash(.RAYLIB_ERROR);
+    triangle_atlas = rl.loadTexture("res/sprite/triangle_atlas.png") catch crsh.crash(.RAYLIB_ERROR);
 }
 
 pub fn unloadEnemies() void {
@@ -129,5 +127,5 @@ pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
 }
 
 pub fn summonEnemy(ent_type: EnemyType, pos: rl.Vector2) void {
-    enemies.append(newEnemy(ent_type, pos)) catch ch.crash(.OUT_OF_MEMORY);
+    enemies.append(newEnemy(ent_type, pos)) catch crsh.crash(.OUT_OF_MEMORY);
 }

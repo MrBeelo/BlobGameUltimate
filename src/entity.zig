@@ -1,9 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const main = @import("main.zig");
-const ch = @import("crash_handler.zig");
-const im = @import("input_manager.zig");
-const mm = @import("map_manager.zig");
+const map = @import("map.zig");
 const ti = @import("timer.zig");
 
 pub const CollisionDirectionX = enum {
@@ -66,7 +64,7 @@ pub const EntityData = struct {
         return rl.Rectangle{ .x = self.pos.x, .y = self.pos.y, .width = self.size.x, .height = self.size.y };
     }
     
-    fn colliding(self: *EntityData, tile: mm.Tile) bool {
+    fn colliding(self: *EntityData, tile: map.Tile) bool {
         return rl.checkCollisionRecs(self.getRect(), tile.dest_rect);
     }
     
@@ -86,7 +84,7 @@ pub const EntityData = struct {
         } else return .NONE;
     }
     
-    fn collideX(self: *EntityData, tile: mm.Tile, direction: CollisionDirectionX) void {
+    fn collideX(self: *EntityData, tile: map.Tile, direction: CollisionDirectionX) void {
         self.collisionsX[@intFromEnum(direction)] = true;
         switch (direction) {
             CollisionDirectionX.LEFT => self.pos.x = tile.dest_rect.x + tile.dest_rect.width,
@@ -95,7 +93,7 @@ pub const EntityData = struct {
         }
     }
     
-    fn collideY(self: *EntityData, tile: mm.Tile, direction: CollisionDirectionY) void {
+    fn collideY(self: *EntityData, tile: map.Tile, direction: CollisionDirectionY) void {
         self.collisionsY[@intFromEnum(direction)] = true;
         self.vel.y = 0.1;
         switch (direction) {
@@ -110,8 +108,8 @@ pub const EntityData = struct {
         
         for (main.test_map.data) |tile| {
             switch (tile.type) {
-                mm.TileType.AIR => {},
-                mm.TileType.SOLID => {
+                map.TileType.AIR => {},
+                map.TileType.SOLID => {
                     if(self.colliding(tile) and horizontal) {
                         self.collideX(tile, self.getDirectionX());
                     } else if (self.colliding(tile) and !horizontal) {

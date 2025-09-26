@@ -1,10 +1,9 @@
 const std = @import("std");
 const rl = @import("raylib");
-const ch = @import("crash_handler.zig");
-const pl = @import("player.zig");
 const main = @import("main.zig");
-const cm = @import("camera_manager.zig");
-const sm = @import("screen_manager.zig");
+const crsh = @import("crash.zig");
+const cam = @import("camera.zig");
+const scr = @import("screen.zig");
 
 pub const TileAtlas = struct {
     texture: rl.Texture2D,
@@ -84,13 +83,13 @@ pub fn loadMap(path: []const u8) !Map {
 
 pub fn drawMap(map: Map) void {
     for(map.data) |tile| {
-        if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cm.camera.target.x - cm.camera.offset.x, .y = cm.camera.target.y - cm.camera.offset.y, .width = sm.sim_size.x, .height = sm.sim_size.y })) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
+        if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cam.camera.target.x - cam.camera.offset.x, .y = cam.camera.target.y - cam.camera.offset.y, .width = scr.sim_size.x, .height = scr.sim_size.y })) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
     }
 }
 
 pub fn loadTileAtlas() void {
     test_tile_atlas = TileAtlas{
-        .texture = rl.loadTexture("res/sprite/map_atlas.png") catch ch.crash(.RAYLIB_ERROR),
+        .texture = rl.loadTexture("res/sprite/map_atlas.png") catch crsh.crash(.RAYLIB_ERROR),
         .atlas_tile_size = 32,
         .atlas_width = 8
     };

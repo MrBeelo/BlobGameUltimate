@@ -1,33 +1,34 @@
 const std = @import("std");
 const rl = @import("raylib");
-const ch = @import("crash_handler.zig");
+const crsh = @import("crash.zig");
 const pl = @import("player.zig");
-const im = @import("input_manager.zig");
-const mm = @import("map_manager.zig");
-const cm = @import("camera_manager.zig");
-const sm = @import("screen_manager.zig");
+const inp = @import("input.zig");
+const map = @import("map.zig");
+const cam = @import("camera.zig");
+const scr = @import("screen.zig");
 const ene = @import("enemy.zig");
-const mem = @import("menu_manager.zig");
-const tm = @import("text_manager.zig");
+const men = @import("menu.zig");
+const txt = @import("text.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
 pub var dt: f32 = 0;
 pub var f3 = false;
-pub var test_map: mm.Map = undefined;
+pub var test_map: map.Map = undefined;
 pub var player: pl.Player = undefined;
-pub var game_state: mem.GameState = .MAIN;
+pub var game_state: men.GameState = .MAIN;
 pub var should_exit: bool = false;
 
 pub fn main() void {
     rl.setConfigFlags(.{ .window_resizable = true });
-    rl.initWindow(@intFromFloat(sm.window_size.x), @intFromFloat(sm.window_size.y), "Blob Game: Ultimate");
+    
+    rl.initWindow(@intFromFloat(scr.window_size.x), @intFromFloat(scr.window_size.y), "Blob Game: Ultimate");
     defer rl.closeWindow();
     
     rl.setExitKey(.null);
     
-    tm.loadFonts();
-    defer tm.unloadFonts();
+    txt.loadFonts();
+    defer txt.unloadFonts();
     
     pl.loadPlayer();
     defer pl.unloadPlayer();
@@ -38,52 +39,52 @@ pub fn main() void {
     ene.summonEnemy(.CIRCLE, .{ .x = 590, .y = 10 });
     ene.summonEnemy(.TRIANGLE, .{ .x = 890, .y = 10 });
     
-    mm.loadTileAtlas();
-    defer mm.unloadTileAtlas();
-    test_map = mm.loadMap("res/data/test-map.json") catch ch.crash(.MAP_ERROR);
+    map.loadTileAtlas();
+    defer map.unloadTileAtlas();
+    test_map = map.loadMap("res/data/test-map.json") catch crsh.crash(.MAP_ERROR);
     
-    cm.initCamera();
-    sm.initTarget();
+    cam.initCamera();
+    scr.initTarget();
     
-    mem.initMenus();
+    men.initMenus();
     
     while (!rl.windowShouldClose() and !should_exit) {
         dt = rl.getFrameTime() * sim_fps;
-        im.updateInputManager();
-        if(im.getPressKey(.F3)) f3 = !f3;
-        sm.updateTargetScale();
+        inp.updateInputManager();
+        if(inp.getPressKey(.F3)) f3 = !f3;
+        scr.updateTargetScale();
         
         if(game_state == .PLAYING) {
             for(ene.enemies.items) |*enemy| enemy.update();
             player.update();
-            cm.updateCamera();
-            if(im.getPressKey(.ESCAPE)) game_state = .PAUSED;
+            cam.updateCamera();
+            if(inp.getPressKey(.ESCAPE)) game_state = .PAUSED;
         } else {
-            mem.updateMenus();
+            men.updateMenus();
         }
         
-        if(sm.target.texture.id != 0) rl.beginTextureMode(sm.target);
+        if(scr.target.texture.id != 0) rl.beginTextureMode(scr.target);
         rl.clearBackground(.white);
         
         if(game_state == .PLAYING) {
-            rl.beginMode2D(cm.camera);
-            mm.drawMap(test_map);
+            rl.beginMode2D(cam.camera);
+            map.drawMap(test_map);
             for(ene.enemies.items) |*enemy| enemy.draw();
             player.draw();
             rl.endMode2D();
         
             player.drawHealthBar();
         } else {
-            mem.drawMenus();
+            men.drawMenus();
         }
         
-        if(f3) rl.drawText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch ch.crash(.OUT_OF_MEMORY), 10, 10, 32, .black);
+        if(f3) rl.drawText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), 10, 10, 32, .black);
         
         rl.endTextureMode();
         
         rl.beginDrawing();
         defer rl.endDrawing();
         rl.clearBackground(.black);
-        sm.drawTarget();
+        scr.drawTarget();
     }
 }

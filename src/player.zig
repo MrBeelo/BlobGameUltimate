@@ -1,12 +1,11 @@
 const std = @import("std");
 const rl = @import("raylib");
 const main = @import("main.zig");
-const ch = @import("crash_handler.zig");
-const im = @import("input_manager.zig");
-const mm = @import("map_manager.zig");
+const crsh = @import("crash.zig");
+const inp = @import("input.zig");
 const ti = @import("timer.zig");
 const ent = @import("entity.zig");
-const sm = @import("screen_manager.zig");
+const scr = @import("screen.zig");
 
 var player_atlas: rl.Texture2D = undefined;
 pub const def_player_size = rl.Vector2{ .x = 40, .y = 60 };
@@ -19,8 +18,8 @@ pub const Player = struct {
     color: rl.Color = .white,
     
     pub fn update(self: *Player) void {
-        if(im.getHoldKey(.LEFT)) self.data.moveLeft() else if(im.getHoldKey(.RIGHT)) self.data.moveRight() else self.data.vel.x = 0;
-        if(im.getPressKey(.JUMP)) self.data.jump();
+        if(inp.getHoldKey(.LEFT)) self.data.moveLeft() else if(inp.getHoldKey(.RIGHT)) self.data.moveRight() else self.data.vel.x = 0;
+        if(inp.getPressKey(.JUMP)) self.data.jump();
         
         self.data.update();
         self.data.updateAnimations(&self.animation_timer);
@@ -36,9 +35,9 @@ pub const Player = struct {
     }
     
     pub fn drawHealthBar(self: *Player) void {
-        rl.drawRectangleRounded(.{ .x = sm.ui_buffer, .y = sm.ui_buffer, .width = 4 * self.data.health, .height = 40 }, 0.7, 100, .red);
-        rl.drawRectangleRoundedLinesEx(.{ .x = sm.ui_buffer, .y = sm.ui_buffer, .width = 4 * base_player_health, .height = 40 }, 0.7, 100, 5, .black);
-        rl.drawText(std.fmt.allocPrintSentinel(main.allocator, "{d:.0}/{d:.0}", .{self.data.health, base_player_health}, 0) catch ch.crash(.OUT_OF_MEMORY), sm.ui_buffer * 2, sm.ui_buffer * 2, 24, .black);
+        rl.drawRectangleRounded(.{ .x = scr.ui_buffer, .y = scr.ui_buffer, .width = 4 * self.data.health, .height = 40 }, 0.7, 100, .red);
+        rl.drawRectangleRoundedLinesEx(.{ .x = scr.ui_buffer, .y = scr.ui_buffer, .width = 4 * base_player_health, .height = 40 }, 0.7, 100, 5, .black);
+        rl.drawText(std.fmt.allocPrintSentinel(main.allocator, "{d:.0}/{d:.0}", .{self.data.health, base_player_health}, 0) catch crsh.crash(.OUT_OF_MEMORY), scr.ui_buffer * 2, scr.ui_buffer * 2, 24, .black);
     }
     
     pub fn reset(self: *Player) void {
@@ -47,7 +46,7 @@ pub const Player = struct {
 };
 
 pub fn loadPlayer() void {
-    player_atlas = rl.loadTexture("res/sprite/player_atlas.png") catch ch.crash(.RAYLIB_ERROR);
+    player_atlas = rl.loadTexture("res/sprite/player_atlas.png") catch crsh.crash(.RAYLIB_ERROR);
 }
 
 pub fn unloadPlayer() void {

@@ -1,14 +1,10 @@
 const std = @import("std");
 const rl = @import("raylib");
-const ch = @import("crash_handler.zig");
-const pl = @import("player.zig");
-const im = @import("input_manager.zig");
-const mm = @import("map_manager.zig");
-const cm = @import("camera_manager.zig");
-const sm = @import("screen_manager.zig");
-const ene = @import("enemy.zig");
+const crsh = @import("crash.zig");
+const inp = @import("input.zig");
+const scr = @import("screen.zig");
 const main = @import("main.zig");
-const tm = @import("text_manager.zig");
+const txt = @import("text.zig");
 
 pub const GameState = enum {
     PLAYING,
@@ -46,8 +42,8 @@ pub const Button = struct {
     }
     
     pub fn getSize(self: *Button) rl.Vector2 {
-        const button_width = tm.measureCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size).x + sm.ui_buffer * 2;
-        const button_height = self.font_size + sm.ui_buffer * 2;
+        const button_width = txt.measureCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size).x + scr.ui_buffer * 2;
+        const button_height = self.font_size + scr.ui_buffer * 2;
         return rl.Vector2{ .x = button_width, .y = button_height };
     }
     
@@ -61,8 +57,7 @@ pub const Button = struct {
     
     pub fn draw(self: *Button) void {
         rl.drawRectangleLinesEx(self.getRect(), 3, self.color);
-        //rl.drawText(self.text, @intFromFloat(self.getRect().x + sm.ui_buffer), @intFromFloat(self.getRect().y + sm.ui_buffer), @intFromFloat(self.font_size), self.color);
-        tm.drawCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size, .{ .x = self.getRect().x + sm.ui_buffer, .y = self.getRect().y + sm.ui_buffer }, self.color);
+        txt.drawCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size, .{ .x = self.getRect().x + scr.ui_buffer, .y = self.getRect().y + scr.ui_buffer }, self.color);
     }
 };
 
@@ -76,8 +71,8 @@ pub const Menu = struct {
     
     pub fn update(self: *Menu) void {
         if(!self.is_gameplay_menu) {
-            if(im.getPressKey(.UP)) self.selected_button_index -= 1;
-            if(im.getPressKey(.DOWN)) self.selected_button_index += 1;
+            if(inp.getPressKey(.UP)) self.selected_button_index -= 1;
+            if(inp.getPressKey(.DOWN)) self.selected_button_index += 1;
             
             if(self.selected_button_index < 0) self.selected_button_index = @as(i32, @intCast(self.buttons.len)) - 1;
             if(self.selected_button_index > @as(i32, @intCast(self.buttons.len)) - 1) self.selected_button_index = 0;
@@ -87,7 +82,7 @@ pub const Menu = struct {
                 button.update();
             }
             
-            if(im.getPressKey(.CONFIRM)) {
+            if(inp.getPressKey(.CONFIRM)) {
                 for(self.buttons, 0..) |*button, index| {
                     if(index == self.selected_button_index) {
                         button.click(); 
@@ -101,21 +96,21 @@ pub const Menu = struct {
     pub fn draw(self: *Menu) void {
         for(self.buttons) |*button| button.draw();
         //maybe make a custom logo for main menu?
-        tm.drawCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size, .{ .x = sm.sim_size.x / 2 - tm.measureCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size).x / 2, .y = 50 }, self.top_text_color);
+        txt.drawCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size, .{ .x = scr.sim_size.x / 2 - txt.measureCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size).x / 2, .y = 50 }, self.top_text_color);
     }
 };
 
 var menus: [@typeInfo(GameState).@"enum".fields.len]Menu = undefined;
 
 fn mutateButtons(buttons: []const Button) []Button {
-    const mut_buttons = main.allocator.alloc(Button, buttons.len) catch ch.crash(.OUT_OF_MEMORY);
+    const mut_buttons = main.allocator.alloc(Button, buttons.len) catch crsh.crash(.OUT_OF_MEMORY);
     std.mem.copyForwards(Button, mut_buttons, buttons);
     return mut_buttons;
 }
 
 fn createButton(text: [:0]const u8, font_size: f32, button_type: ButtonType, y_pos: f32) Button {
     var button = Button{ .button_type = button_type, .text = text, .font_size = font_size, .pos = .zero() };
-    button.pos = .{ .x = sm.sim_size.x / 2 - button.getSize().x / 2, .y = y_pos };
+    button.pos = .{ .x = scr.sim_size.x / 2 - button.getSize().x / 2, .y = y_pos };
     return button;
 }
 

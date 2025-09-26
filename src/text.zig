@@ -1,12 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const main = @import("main.zig");
-const ch = @import("crash_handler.zig");
-const im = @import("input_manager.zig");
-const mm = @import("map_manager.zig");
-const ti = @import("timer.zig");
-const ent = @import("entity.zig");
-const sm = @import("screen_manager.zig");
+const crsh = @import("crash.zig");
 
 var elevatia: rl.Font = undefined;
 var elevatia_italic: rl.Font = undefined;
@@ -30,8 +25,8 @@ fn getFont(font_name: FontName, font_type: FontType) rl.Font {
 }
 
 pub fn loadFonts() void {
-    elevatia = rl.loadFontEx("res/font/elevatia.ttf", 100, null) catch ch.crash(.RAYLIB_ERROR);
-    elevatia_italic = rl.loadFontEx("res/font/elevatia_italic.ttf", 100, null) catch ch.crash(.RAYLIB_ERROR);
+    elevatia = rl.loadFontEx("res/font/elevatia.ttf", 100, null) catch crsh.crash(.RAYLIB_ERROR);
+    elevatia_italic = rl.loadFontEx("res/font/elevatia_italic.ttf", 100, null) catch crsh.crash(.RAYLIB_ERROR);
 }
 
 pub fn unloadFonts() void {

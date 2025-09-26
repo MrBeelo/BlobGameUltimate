@@ -1,7 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const main = @import("main.zig");
-const ch = @import("crash_handler.zig");
+const crsh = @import("crash.zig");
 
 pub const sim_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
 pub var window_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
@@ -10,7 +10,7 @@ var target_scale: f32 = undefined;
 pub const ui_buffer: f32 = 10;
 
 pub fn initTarget() void {
-    target = rl.loadRenderTexture(sim_size.x, sim_size.y) catch ch.crash(.RAYLIB_ERROR);
+    target = rl.loadRenderTexture(sim_size.x, sim_size.y) catch crsh.crash(.RAYLIB_ERROR);
     rl.setTextureFilter(target.texture, .bilinear);
 }
 
