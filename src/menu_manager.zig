@@ -12,7 +12,10 @@ const tm = @import("text_manager.zig");
 
 pub const GameState = enum {
     PLAYING,
-    MAIN
+    MAIN,
+    PAUSED,
+    DIED,
+    EXIT
 };
 
 pub const ButtonType = union(enum) {
@@ -20,6 +23,11 @@ pub const ButtonType = union(enum) {
     exit: bool,
     reset_player: bool,
 };
+
+fn changeGameState(game_state: GameState) void {
+    main.game_state = game_state;
+    menus[@intFromEnum(game_state)].selected_button_index = 0;
+}
 
 pub const Button = struct {
     pos: rl.Vector2,
@@ -31,7 +39,7 @@ pub const Button = struct {
     
     pub fn click(self: *Button) void {
         switch (self.button_type) {
-            .change_game_state => |game_state| main.game_state = game_state,
+            .change_game_state => |game_state| changeGameState(game_state),
             .exit => main.should_exit = true,
             .reset_player => main.player.reset()
         }
@@ -111,6 +119,16 @@ fn createButton(text: [:0]const u8, font_size: f32, button_type: ButtonType, y_p
     return button;
 }
 
+fn getDefaultButtonYPos(button_index: i32) f32 {
+    return 160 + 70 * @as(f32, @floatFromInt(button_index)); 
+}
+
+const default_button_font_size: f32 = 40; 
+
+fn createDefaultButton(text: [:0]const u8, button_type: ButtonType, button_index: i32) Button {
+    return createButton(text, default_button_font_size, button_type, getDefaultButtonYPos(button_index));
+}
+
 pub fn initMenus() void {
     menus = [_]Menu{
         // PLAYING
@@ -119,10 +137,38 @@ pub fn initMenus() void {
         // MAIN
         Menu{ 
             .buttons = mutateButtons(&[_]Button{
-                createButton("PLAY", 32, .{ .change_game_state = .PLAYING }, 140),
-                createButton("EXIT", 32, .{ .exit = true }, 220)
+                createDefaultButton("PLAY", .{ .change_game_state = .PLAYING }, 0),
+                createDefaultButton("EXIT", .{ .change_game_state = .EXIT }, 1)
             }), 
-            .top_text = "MAIN MENU"
+            .top_text = "BLOB GAME: ULTIMATE"
+        },
+        
+        // PAUSED
+        Menu{ 
+            .buttons = mutateButtons(&[_]Button{
+                createDefaultButton("CONTINUE", .{ .change_game_state = .PLAYING }, 0),
+                createDefaultButton("BACK TO MAIN MENU", .{ .change_game_state = .MAIN }, 1)
+            }), 
+            .top_text = "PAUSED"
+        },
+        
+        // DIED
+        Menu{ 
+            .buttons = mutateButtons(&[_]Button{
+                createDefaultButton("TRY AGAIN", .{ .change_game_state = .PLAYING }, 0),
+                createDefaultButton("BACK TO MAIN MENU", .{ .change_game_state = .MAIN }, 1)
+            }), 
+            .top_text = "YOU DIED",
+            .top_text_color = .red
+        },
+        
+        // EXIT
+        Menu{ 
+            .buttons = mutateButtons(&[_]Button{
+                createDefaultButton("YES :)", .{ .exit = true }, 0),
+                createDefaultButton("NO :(", .{ .change_game_state = .MAIN }, 1)
+            }), 
+            .top_text = "EXIT THE GAME?"
         }
     };
 }

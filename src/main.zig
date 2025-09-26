@@ -57,6 +57,7 @@ pub fn main() void {
             for(ene.enemies.items) |*enemy| enemy.update();
             player.update();
             cm.updateCamera();
+            if(im.getPressKey(.ESCAPE)) game_state = .PAUSED;
         } else {
             mem.updateMenus();
         }

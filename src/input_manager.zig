@@ -8,7 +8,8 @@ const GameKey = enum {
     DOWN,
     JUMP,
     CONFIRM,
-    F3
+    F3,
+    ESCAPE
 };
 
 const game_key_enum_length = @typeInfo(GameKey).@"enum".fields.len;
@@ -47,4 +48,5 @@ pub fn updateInputManager() void {
     handlePressKey(.space, .JUMP);
     handlePressKey(.enter, .CONFIRM);
     handlePressKey(.f3, .F3);
+    handlePressKey(.escape, .ESCAPE);
 }
