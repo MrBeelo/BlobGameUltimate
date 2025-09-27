@@ -106,12 +106,6 @@ pub const Menu = struct {
 
 var menus: [@typeInfo(GameState).@"enum".fields.len]Menu = undefined;
 
-fn mutateButtons(buttons: []const Button) []Button {
-    const mut_buttons = main.allocator.alloc(Button, buttons.len) catch crsh.crash(.OUT_OF_MEMORY);
-    std.mem.copyForwards(Button, mut_buttons, buttons);
-    return mut_buttons;
-}
-
 fn createButton(text: [:0]const u8, font_size: f32, button_type: ButtonType, y_pos: f32) Button {
     var button = Button{ .button_type = button_type, .text = text, .font_size = font_size, .pos = .zero() };
     button.pos = .{ .x = scr.sim_size.x / 2 - button.getSize().x / 2, .y = y_pos };
@@ -122,20 +116,19 @@ fn getDefaultButtonYPos(button_index: i32) f32 {
     return 160 + 70 * @as(f32, @floatFromInt(button_index)); 
 }
 
-const default_button_font_size: f32 = 40; 
-
 fn createDefaultButton(text: [:0]const u8, button_type: ButtonType, button_index: i32) Button {
+    const default_button_font_size: f32 = 40; 
     return createButton(text, default_button_font_size, button_type, getDefaultButtonYPos(button_index));
 }
 
 pub fn initMenus() void {
     menus = [_]Menu{
         // PLAYING
-        Menu{ .buttons = mutateButtons(&[_]Button{}), .is_gameplay_menu = true },
+        Menu{ .buttons = main.mutateSlice(Button, &[_]Button{}), .is_gameplay_menu = true },
         
         // MAIN
         Menu{ 
-            .buttons = mutateButtons(&[_]Button{
+            .buttons = main.mutateSlice(Button, &[_]Button{
                 createDefaultButton("PLAY", .{ .reset_player = true }, 0),
                 createDefaultButton("EXIT", .{ .change_game_state = .EXIT }, 1)
             }), 
@@ -144,7 +137,7 @@ pub fn initMenus() void {
         
         // PAUSED
         Menu{ 
-            .buttons = mutateButtons(&[_]Button{
+            .buttons = main.mutateSlice(Button, &[_]Button{
                 createDefaultButton("CONTINUE", .{ .change_game_state = .PLAYING }, 0),
                 createDefaultButton("BACK TO MAIN MENU", .{ .change_game_state = .MAIN }, 1)
             }), 
@@ -153,7 +146,7 @@ pub fn initMenus() void {
         
         // DIED
         Menu{ 
-            .buttons = mutateButtons(&[_]Button{
+            .buttons = main.mutateSlice(Button, &[_]Button{
                 createDefaultButton("TRY AGAIN", .{ .reset_player = true }, 0),
                 createDefaultButton("BACK TO MAIN MENU", .{ .change_game_state = .MAIN }, 1)
             }), 
@@ -163,7 +156,7 @@ pub fn initMenus() void {
         
         // EXIT
         Menu{ 
-            .buttons = mutateButtons(&[_]Button{
+            .buttons = main.mutateSlice(Button, &[_]Button{
                 createDefaultButton("YES :)", .{ .exit = true }, 0),
                 createDefaultButton("NO :(", .{ .change_game_state = .MAIN }, 1)
             }), 

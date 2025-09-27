@@ -14,10 +14,16 @@ pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
 pub var dt: f32 = 0;
 pub var f3 = false;
-pub var test_map: map.Map = undefined;
 pub var player: pl.Player = undefined;
 pub var game_state: men.GameState = .MAIN;
 pub var should_exit: bool = false;
+pub var current_map: usize = 0;
+
+pub fn mutateSlice(comptime T: type, slice: []const T) []T {
+    const mut_slice = allocator.alloc(T, slice.len) catch crsh.crash(.OUT_OF_MEMORY);
+    std.mem.copyForwards(T, mut_slice, slice);
+    return mut_slice;
+}
 
 pub fn main() void {
     rl.setConfigFlags(.{ .window_resizable = true });
@@ -36,17 +42,17 @@ pub fn main() void {
     
     ene.loadEnemies();
     defer ene.unloadEnemies();
-    ene.summonEnemy(.CIRCLE, .{ .x = 590, .y = 10 });
-    ene.summonEnemy(.TRIANGLE, .{ .x = 890, .y = 10 });
+    //ene.summonEnemy(.CIRCLE, .{ .x = 590, .y = 10 });
+    //ene.summonEnemy(.TRIANGLE, .{ .x = 890, .y = 10 });
     
     map.loadTileAtlas();
     defer map.unloadTileAtlas();
-    test_map = map.loadMap("res/data/test-map.json") catch crsh.crash(.MAP_ERROR);
     
     cam.initCamera();
     scr.initTarget();
     
     men.initMenus();
+    map.initMaps();
     
     while (!rl.windowShouldClose() and !should_exit) {
         dt = rl.getFrameTime() * sim_fps;
@@ -68,7 +74,7 @@ pub fn main() void {
         
         if(game_state == .PLAYING) {
             rl.beginMode2D(cam.camera);
-            map.drawMap(test_map);
+            map.drawMap(map.maps[current_map]);
             for(ene.enemies.items) |*enemy| enemy.draw();
             player.draw();
             rl.endMode2D();
@@ -78,7 +84,7 @@ pub fn main() void {
             men.drawMenus();
         }
         
-        if(f3) rl.drawText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), 10, 10, 32, .black);
+        if(f3) rl.drawText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), 10, 80, 32, .black);
         
         rl.endTextureMode();
         

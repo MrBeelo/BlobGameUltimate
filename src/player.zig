@@ -7,6 +7,7 @@ const ti = @import("timer.zig");
 const ent = @import("entity.zig");
 const scr = @import("screen.zig");
 const men = @import("menu.zig");
+const map = @import("map.zig");
 
 var player_atlas: rl.Texture2D = undefined;
 pub const def_player_size = rl.Vector2{ .x = 40, .y = 60 };
@@ -43,7 +44,7 @@ pub const Player = struct {
     }
     
     pub fn reset(self: *Player) void {
-        self.data.pos = .{ .x = 10, .y = 10 }; //CHANGE WHEN YOU ADD CUSTOM SPAWN POINTS
+        self.data.pos = map.maps[main.current_map].player_spawn_pos; //CHANGE WHEN YOU ADD MORE MAPS AND CUSTOM MAP SYSTEM
         self.data.vel = .zero();
         self.immunity_timer.activate();
         self.data.health = base_player_health;

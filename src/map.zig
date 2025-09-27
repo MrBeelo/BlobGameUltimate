@@ -4,6 +4,7 @@ const main = @import("main.zig");
 const crsh = @import("crash.zig");
 const cam = @import("camera.zig");
 const scr = @import("screen.zig");
+const ene = @import("enemy.zig");
 
 pub const TileAtlas = struct {
     texture: rl.Texture2D,
@@ -23,12 +24,20 @@ pub const Tile = struct {
     texture_number: i32
 };
 
+pub const EnemySpawnPos = struct {
+    enemy_type: ene.EnemyType,
+    spawn_pos: rl.Vector2
+};
+
 pub const Map = struct {
     map_size: rl.Vector2,
     tile_size: f32,
-    data: []Tile
+    data: []Tile,
+    player_spawn_pos: rl.Vector2 = .{ .x = 10, .y = 10 },
+    enemy_spawn_poses: []EnemySpawnPos = &[_]EnemySpawnPos{}
 };
 
+pub var maps: []Map = undefined;
 var test_tile_atlas: TileAtlas = undefined;
 
 pub fn loadMap(path: []const u8) !Map {
@@ -81,8 +90,19 @@ pub fn loadMap(path: []const u8) !Map {
     return Map{ .map_size = map_size, .tile_size = tile_size, .data = data };
 }
 
+pub fn loadMapEx(path: []const u8, player_spawn_pos: rl.Vector2, enemy_spawn_poses: []EnemySpawnPos) !Map {
+    var map = try loadMap(path);
+    map.player_spawn_pos = player_spawn_pos;
+    map.enemy_spawn_poses = enemy_spawn_poses;
+    return map;
+}
+
 pub fn resetMap() void {
     main.player.reset();
+    ene.enemies.clearRetainingCapacity();
+    for (maps[main.current_map].enemy_spawn_poses) |*enemy_spawn_pos| {
+        ene.summonEnemy(enemy_spawn_pos.enemy_type, enemy_spawn_pos.spawn_pos);
+    }
     //RESET ALL ENTITIES HERE
 }
 
@@ -102,4 +122,15 @@ pub fn loadTileAtlas() void {
 
 pub fn unloadTileAtlas() void {
     rl.unloadTexture(test_tile_atlas.texture);
+}
+
+pub fn initMaps() void {
+    //TEMPORARY, MAKE A BETTER SYSTEM SO THAT YOU MINIMIZE DUPED CODE
+    maps = main.mutateSlice(Map, &[_]Map{
+        loadMapEx("res/data/test-map.json", .{ .x = 200, .y = 10 }, 
+            main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = 590, .y = 10 } } })) catch crsh.crash(.MAP_ERROR),
+        
+        loadMapEx("res/data/test-map.json", .{ .x = 1000, .y = 10 }, 
+            main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = 590, .y = 10 } } })) catch crsh.crash(.MAP_ERROR),
+    });
 }

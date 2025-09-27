@@ -106,7 +106,7 @@ pub const EntityData = struct {
     pub fn manageCollisions(self: *EntityData, horizontal: bool) void {
         if(horizontal) self.collisionsX = [_]bool{ false } ** 2 else self.collisionsY = [_]bool{ false } ** 2;
         
-        for (main.test_map.data) |tile| {
+        for (map.maps[main.current_map].data) |tile| {
             switch (tile.type) {
                 map.TileType.AIR => {},
                 map.TileType.SOLID => {

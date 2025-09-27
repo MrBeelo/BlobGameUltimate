@@ -10,7 +10,7 @@ var circle_atlas: rl.Texture2D = undefined;
 var triangle_atlas: rl.Texture2D = undefined;
 pub var enemies: std.array_list.Managed(Enemy) = undefined;
 
-const EnemyType = enum {
+pub const EnemyType = enum {
     CIRCLE,
     TRIANGLE,
     TRIANGLE_BOSS
@@ -30,7 +30,7 @@ pub const Enemy = struct {
         self.runAI();
         self.data.update();
         self.data.updateAnimations(&self.animation_timer);
-        if(self.data.getRect().checkCollision(main.player.data.getRect()) and !main.player.immunity_timer.active) {
+        if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !main.player.immunity_timer.active) {
             main.player.data.health -= self.damage_dealt;
             main.player.immunity_timer.activate();
         }
@@ -41,6 +41,7 @@ pub const Enemy = struct {
         rl.drawTexturePro(self.texture, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
             self.data.getRect(), .zero(), 0, .white);
         if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .red);
+        if (main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .blue);
     }
     
     pub fn playerClose(self: *Enemy) bool {
@@ -66,6 +67,13 @@ pub const Enemy = struct {
         } else {
             if(self.idle_direction_right) self.data.moveRight() else self.data.moveLeft();
         }
+    }
+    
+    pub fn getHurtBox(self: *Enemy) rl.Rectangle {
+        const shrink_amount: f32 = 8;
+        const y_offset: f32 = 3;
+        return .{ .x = self.data.getRect().x + shrink_amount, .y = self.data.getRect().y + shrink_amount + y_offset, 
+            .width = self.data.getRect().width - shrink_amount * 2, .height = self.data.getRect().height - shrink_amount * 2 - y_offset };
     }
 };
 
