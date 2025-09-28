@@ -25,24 +25,40 @@ pub const Enemy = struct {
     direction_timer: ti.Timer = .{ .auto_start = true, .duration = 2, .repeat = true },
     idle_direction_right: bool = true,
     damage_dealt: f32 = 10,
+    alive: bool = true,
     
-    pub fn update(self: *Enemy) void {  
-        self.runAI();
-        self.data.update();
-        self.data.updateAnimations(&self.animation_timer);
-        if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !main.player.immunity_timer.active) {
-            main.player.data.health -= self.damage_dealt;
-            main.player.immunity_timer.activate();
+    pub fn update(self: *Enemy) void {
+        if(self.alive) {
+            self.runAI();
+            self.data.update();
+            self.data.updateAnimations(&self.animation_timer);
+            
+            if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !main.player.data.immunity_timer.active) {
+                main.player.data.health -= self.damage_dealt;
+                main.player.data.immunity_timer.activate();
+                main.player.data.hit_timer.activate();
+            }
+            
+            if(main.player.sword.checkSwordCollision(self.getHurtBox()) and !self.data.immunity_timer.active) {
+                self.data.hit_timer.activate();
+                self.data.immunity_timer.activate();
+                self.data.jump();
+                self.data.health -= 10;
+            }
+            
+            if(self.data.health <= 0) self.alive = false;
         }
-        //if(main.player.sword.checkSwordCollision(self.getHurtBox())) std.debug.print("COLLIDING", .{}); DO SOMETHING HERE
     }
     
     pub fn draw(self: *Enemy) void {
+        const texture = if(self.data.hit_timer.active) main.fullyTintTexture(self.texture, .white) else self.texture;
         const flip: f32 = if(self.data.last_direction_right) 1 else -1;
-        rl.drawTexturePro(self.texture, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
-            self.data.getRect(), .zero(), 0, .white);
-        if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .red);
-        if (main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .blue);
+        if(self.alive) {
+            rl.drawTexturePro(texture, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
+                self.data.getRect(), .zero(), 0, self.data.color);
+            if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .red);
+            if (main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .blue);
+        }
     }
     
     pub fn playerClose(self: *Enemy) bool {
@@ -131,6 +147,10 @@ pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
     
     enemy.animation_timer.init();
     enemy.direction_timer.init();
+    enemy.data.hit_timer.init();
+    enemy.data.immunity_timer.init();
+    
+    enemy.data.immunity_timer.duration = 0.6;
     
     return enemy;
 }

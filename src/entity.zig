@@ -36,6 +36,9 @@ pub const EntityData = struct {
     anim_state: DefaultAnimState = .IDLE1,
     leg_move_toggle: bool = false,
     health: f32 = 5,
+    hit_timer: ti.Timer = .{ .duration = 0.05 },
+    immunity_timer: ti.Timer = .{ .duration = 1.5 },
+    color: rl.Color = .white,
     
     pub fn update(self: *EntityData) void {
         if(self.vel.y < 15) self.vel.y += 0.5 * main.dt;
@@ -44,6 +47,11 @@ pub const EntityData = struct {
         self.manageCollisions(true);
         self.pos.y += self.vel.y * main.dt;
         self.manageCollisions(false);
+        
+        self.hit_timer.update();
+        self.immunity_timer.update();
+        
+        self.color = if(self.immunity_timer.active and !self.hit_timer.active) rl.Color{ .r = 255, .g = 255, .b = 255, .a = 125 } else .white;
     }
     
     pub fn moveLeft(self: *EntityData) void {

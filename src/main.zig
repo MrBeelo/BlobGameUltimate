@@ -26,6 +26,15 @@ pub fn mutateSlice(comptime T: type, slice: []const T) []T {
     return mut_slice;
 }
 
+pub fn fullyTintTexture(texture: rl.Texture2D, color: rl.Color) rl.Texture2D {
+    var image = rl.loadImageFromTexture(texture) catch crsh.crash(.RAYLIB_ERROR);
+    for(0..(@intCast(texture.width * texture.height))) |index| {
+        const parsed_color = rl.getImageColor(image, @mod(@as(i32, @intCast(index)), texture.width), @divFloor(@as(i32, @intCast(index)), texture.width));
+        if((parsed_color.r != color.r or parsed_color.g != color.g or parsed_color.b != color.b) and parsed_color.a != 0) rl.imageColorReplace(&image, parsed_color, color);
+    }
+    return rl.loadTextureFromImage(image) catch crsh.crash(.RAYLIB_ERROR);
+}
+
 pub fn main() void {
     rl.setConfigFlags(.{ .window_resizable = true });
     

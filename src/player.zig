@@ -18,8 +18,6 @@ pub const base_player_health: f32 = 100;
 pub const Player = struct {
     data: ent.EntityData = .{ .size = def_player_size },
     animation_timer: ti.Timer = ti.Timer{ .auto_start = true, .duration = 0.3, .repeat = true },
-    immunity_timer: ti.Timer = .{ .duration = 1.5 },
-    color: rl.Color = .white,
     sword: sw.Sword = .{},
     
     pub fn update(self: *Player) void {
@@ -29,17 +27,17 @@ pub const Player = struct {
         
         self.data.update();
         self.data.updateAnimations(&self.animation_timer);
-        self.immunity_timer.update();
-        self.color = if(self.immunity_timer.active) rl.Color{ .r = 255, .g = 255, .b = 255, .a = 125 } else .white;
+        
         if(self.data.health <= 0) men.changeGameState(.DIED);
         
         self.sword.update();
     }
     
     pub fn draw(self: *Player) void {
+        const texture = if(self.data.hit_timer.active) main.fullyTintTexture(player_atlas, .white) else player_atlas;
         const flip: f32 = if(self.data.last_direction_right) 1 else -1;
-        rl.drawTexturePro(player_atlas, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
-            self.data.getRect(), .zero(), 0, self.color);
+        rl.drawTexturePro(texture, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
+            self.data.getRect(), .zero(), 0, self.data.color);
         self.sword.draw();
         if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .orange);
     }
@@ -53,7 +51,7 @@ pub const Player = struct {
     pub fn reset(self: *Player) void {
         self.data.pos = map.maps[main.current_map].player_spawn_pos; //CHANGE WHEN YOU ADD MORE MAPS AND CUSTOM MAP SYSTEM
         self.data.vel = .zero();
-        self.immunity_timer.activate();
+        self.data.immunity_timer.activate();
         self.data.health = base_player_health;
     }
 };
@@ -69,6 +67,6 @@ pub fn unloadPlayer() void {
 pub fn newPlayer() Player {
     var player = Player{ .data = .{ .pos = .{ .x = 10, .y = 10 }, .size = def_player_size, .speed = 3.5, .health = base_player_health } }; //THIS SUCKS! MAKE CUSTOM SPAWN POINTSD
     player.animation_timer.init();
-    player.immunity_timer.init();
+    player.data.immunity_timer.init();
     return player;
 }
