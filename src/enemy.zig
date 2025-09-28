@@ -34,6 +34,7 @@ pub const Enemy = struct {
             main.player.data.health -= self.damage_dealt;
             main.player.immunity_timer.activate();
         }
+        //if(main.player.sword.checkSwordCollision(self.getHurtBox())) std.debug.print("COLLIDING", .{}); DO SOMETHING HERE
     }
     
     pub fn draw(self: *Enemy) void {

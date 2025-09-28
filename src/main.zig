@@ -9,6 +9,7 @@ const scr = @import("screen.zig");
 const ene = @import("enemy.zig");
 const men = @import("menu.zig");
 const txt = @import("text.zig");
+const sw = @import("sword.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -42,8 +43,6 @@ pub fn main() void {
     
     ene.loadEnemies();
     defer ene.unloadEnemies();
-    //ene.summonEnemy(.CIRCLE, .{ .x = 590, .y = 10 });
-    //ene.summonEnemy(.TRIANGLE, .{ .x = 890, .y = 10 });
     
     map.loadTileAtlas();
     defer map.unloadTileAtlas();
@@ -53,6 +52,9 @@ pub fn main() void {
     
     men.initMenus();
     map.initMaps();
+    
+    sw.loadSword();
+    defer sw.unloadSword();
     
     while (!rl.windowShouldClose() and !should_exit) {
         dt = rl.getFrameTime() * sim_fps;
