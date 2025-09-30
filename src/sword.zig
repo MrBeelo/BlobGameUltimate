@@ -50,7 +50,7 @@ pub const Sword = struct {
         self.sword_active_timer.update();
         
         const dir_modifier: f32 = if(self.flip == 1) pl.def_player_size.x else 0;
-        self.pivot.x = main.player.data.pos.x + dir_modifier + (relative_pivot_pos.x - 7) * self.flip;
+        self.pivot.x = main.player.data.pos.x + dir_modifier + (relative_pivot_pos.x - 10) * self.flip;
         self.pivot.y = main.player.data.pos.y + relative_pivot_pos.y - 5;
 
         if(self.sword_active_timer.active) self.rot += main.dt * 10;

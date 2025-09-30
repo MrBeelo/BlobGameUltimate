@@ -33,17 +33,26 @@ pub const Enemy = struct {
             self.data.update();
             self.data.updateAnimations(&self.animation_timer);
             
+            if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !self.data.immunity_timer.active and main.player.data.pos.y < self.data.pos.y - pl.def_player_size.y + 12) {
+                main.player.data.jumpMidAir();
+                self.data.health -= 10;
+                self.data.hit_timer.activate();
+                self.data.immunity_timer.activate();
+                main.player.data.immunity_timer.activate();
+            }
+            
             if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !main.player.data.immunity_timer.active) {
                 main.player.data.health -= self.damage_dealt;
                 main.player.data.immunity_timer.activate();
                 main.player.data.hit_timer.activate();
+                main.player.data.knockBack(self.data.pos.x < main.player.data.pos.x, 7);
             }
             
             if(main.player.sword.checkSwordCollision(self.getHurtBox()) and !self.data.immunity_timer.active) {
+                self.data.health -= 10;
                 self.data.hit_timer.activate();
                 self.data.immunity_timer.activate();
-                self.data.jump();
-                self.data.health -= 10;
+                self.data.knockBack(main.player.data.pos.x < self.data.pos.x, 5);
             }
             
             if(self.data.health <= 0) self.alive = false;
@@ -63,7 +72,11 @@ pub const Enemy = struct {
     
     pub fn playerClose(self: *Enemy) bool {
         const player = main.player.data;
-        if(player.pos.x - self.data.pos.x >= -self.detection_radius and player.pos.x - self.data.pos.x < self.detection_radius and player.pos.y - self.data.pos.y >= -self.detection_radius and player.pos.y - self.data.pos.y < self.detection_radius) return true;
+        if(player.pos.x - self.data.pos.x >= -self.detection_radius 
+            and player.pos.x - self.data.pos.x < self.detection_radius 
+            and player.pos.y - self.data.pos.y >= -self.detection_radius 
+            and player.pos.y - self.data.pos.y < self.detection_radius 
+            and !self.data.immunity_timer.active) return true;
         return false;
     }
     

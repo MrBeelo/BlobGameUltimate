@@ -21,7 +21,7 @@ pub const Player = struct {
     sword: sw.Sword = .{},
     
     pub fn update(self: *Player) void {
-        if(inp.getHoldKey(.LEFT)) self.data.moveLeft() else if(inp.getHoldKey(.RIGHT)) self.data.moveRight() else self.data.vel.x = 0;
+        if(inp.getHoldKey(.LEFT)) self.data.moveLeft() else if(inp.getHoldKey(.RIGHT)) self.data.moveRight() else if(!self.data.is_being_knocked) self.data.vel.x = 0;
         if(inp.getPressKey(.JUMP)) self.data.jump();
         if(rl.isKeyPressed(.k)) self.sword.use();
         

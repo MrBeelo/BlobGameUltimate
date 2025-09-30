@@ -39,6 +39,7 @@ pub const EntityData = struct {
     hit_timer: ti.Timer = .{ .duration = 0.05 },
     immunity_timer: ti.Timer = .{ .duration = 1.5 },
     color: rl.Color = .white,
+    is_being_knocked: bool = false,
     
     pub fn update(self: *EntityData) void {
         if(self.vel.y < 15) self.vel.y += 0.5 * main.dt;
@@ -52,20 +53,32 @@ pub const EntityData = struct {
         self.immunity_timer.update();
         
         self.color = if(self.immunity_timer.active and !self.hit_timer.active) rl.Color{ .r = 255, .g = 255, .b = 255, .a = 125 } else .white;
+        
+        if(self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)] and self.is_being_knocked) self.is_being_knocked = false;
     }
     
     pub fn moveLeft(self: *EntityData) void {
-        self.vel.x = -self.speed;
+        if(!self.is_being_knocked) self.vel.x = -self.speed;
         self.last_direction_right = false;
     }
     
     pub fn moveRight(self: *EntityData) void {
-        self.vel.x = self.speed;
+        if(!self.is_being_knocked) self.vel.x = self.speed;
         self.last_direction_right = true;
     }
     
     pub fn jump(self: *EntityData) void {
         if(self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)]) self.vel.y = -10;
+    }
+    
+    pub fn jumpMidAir(self: *EntityData) void {
+        self.vel.y = -10;
+    }
+    
+    pub fn knockBack(self: *EntityData, right: bool, power: f32) void {
+        self.is_being_knocked = true;
+        self.vel.x += if(right) power else -power;
+        self.vel.y -= 3;
     }
     
     pub fn getRect(self: *EntityData) rl.Rectangle {
