@@ -20,6 +20,7 @@ pub const Enemy = struct {
     data: ent.EntityData,
     type: EnemyType = .CIRCLE,
     texture: rl.Texture2D,
+    tinted_texture: rl.Texture2D,
     detection_radius: f32,
     animation_timer: ti.Timer = .{ .auto_start = true, .duration = 0.3, .repeat = true },
     direction_timer: ti.Timer = .{ .auto_start = true, .duration = 2, .repeat = true },
@@ -60,7 +61,7 @@ pub const Enemy = struct {
     }
     
     pub fn draw(self: *Enemy) void {
-        const texture = if(self.data.hit_timer.active) main.fullyTintTexture(self.texture, .white) else self.texture;
+        const texture = if(self.data.hit_timer.active) self.tinted_texture else self.texture;
         const flip: f32 = if(self.data.last_direction_right) 1 else -1;
         if(self.alive) {
             rl.drawTexturePro(texture, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
@@ -156,7 +157,7 @@ pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
         .TRIANGLE_BOSS => 30
     };
     
-    var enemy = Enemy{ .data = .{ .pos = pos, .size = size, .speed = speed, .health = health }, .texture = texture, .detection_radius = detection_radius, .damage_dealt = damage_dealt };   
+    var enemy = Enemy{ .data = .{ .pos = pos, .size = size, .speed = speed, .health = health }, .texture = texture, .tinted_texture = main.fullyTintTexture(texture, .white), .detection_radius = detection_radius, .damage_dealt = damage_dealt };   
     
     enemy.animation_timer.init();
     enemy.direction_timer.init();

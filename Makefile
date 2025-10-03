@@ -10,7 +10,7 @@ ARCH ?= native
 RUN = true
 
 # Type of optimization to use Options: debug, safe, fast, small
-OPTIMIZATION = debug
+OPTIMIZATION = small
 
 # A search prefix is needed for the compiler to find all libraries for linux and macos. You can get away with using /usr if
 # you're compiling on the same OS, otherwise you should provide a Linux/MacOS SDK and enter the usr folder from there.

@@ -32,7 +32,9 @@ pub fn fullyTintTexture(texture: rl.Texture2D, color: rl.Color) rl.Texture2D {
         const parsed_color = rl.getImageColor(image, @mod(@as(i32, @intCast(index)), texture.width), @divFloor(@as(i32, @intCast(index)), texture.width));
         if((parsed_color.r != color.r or parsed_color.g != color.g or parsed_color.b != color.b) and parsed_color.a != 0) rl.imageColorReplace(&image, parsed_color, color);
     }
-    return rl.loadTextureFromImage(image) catch crsh.crash(.RAYLIB_ERROR);
+    const new_texture = rl.loadTextureFromImage(image) catch crsh.crash(.RAYLIB_ERROR);
+    rl.unloadImage(image);
+    return new_texture;
 }
 
 pub fn main() void {
