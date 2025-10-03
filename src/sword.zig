@@ -60,7 +60,7 @@ pub const Sword = struct {
     pub fn draw(self: *Sword) void {
         if(self.sword_active_timer.active) rl.drawTexturePro(sword_texture, rl.Rectangle{ .x = 0, .y = 0, .width = 15, .height = 40 }, .{ .x = self.pivot.x, .y = self.pivot.y, .width = def_sword_size.x, .height = def_sword_size.y }, relative_pivot_pos, self.rot * self.flip, .white);
         if(main.f3) rl.drawCircleV(self.pivot, 5, .sky_blue);
-        if(main.f3) rl.drawCircleV(self.getTip(), 5, .red);
+        if(main.f3) rl.drawCircleV(self.getTip(), 5, .dark_blue);
     }
 };
 

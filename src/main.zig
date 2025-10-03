@@ -85,7 +85,7 @@ pub fn main() void {
         
         if(game_state == .PLAYING) {
             rl.beginMode2D(cam.camera);
-            map.drawMap(map.maps[current_map]);
+            map.maps[current_map].draw();
             for(ene.enemies.items) |*enemy| enemy.draw();
             player.draw();
             rl.endMode2D();

@@ -16,7 +16,7 @@ pub const def_player_size = rl.Vector2{ .x = 40, .y = 60 };
 pub const base_player_health: f32 = 100;
 
 pub const Player = struct {
-    data: ent.EntityData = .{ .size = def_player_size },
+    data: ent.EntityData = .{ .size = def_player_size, .is_player = true },
     animation_timer: ti.Timer = ti.Timer{ .auto_start = true, .duration = 0.3, .repeat = true },
     sword: sw.Sword = .{},
     

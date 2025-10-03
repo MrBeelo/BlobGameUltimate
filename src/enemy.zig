@@ -65,8 +65,8 @@ pub const Enemy = struct {
         if(self.alive) {
             rl.drawTexturePro(texture, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
                 self.data.getRect(), .zero(), 0, self.data.color);
-            if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .red);
-            if (main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .blue);
+            if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .orange);
+            if (main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .red);
         }
     }
     

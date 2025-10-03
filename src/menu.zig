@@ -39,7 +39,7 @@ pub const Button = struct {
             .change_game_state => |game_state| changeGameState(game_state),
             .exit => main.should_exit = true,
             .reset_player => {
-                map.resetMap();
+                map.maps[main.current_map].reset();
                 changeGameState(.PLAYING);
             }
         }

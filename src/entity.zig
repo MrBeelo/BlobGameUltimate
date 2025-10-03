@@ -3,6 +3,7 @@ const rl = @import("raylib");
 const main = @import("main.zig");
 const map = @import("map.zig");
 const ti = @import("timer.zig");
+const obj = @import("object.zig");
 
 pub const CollisionDirectionX = enum {
     LEFT,
@@ -40,6 +41,7 @@ pub const EntityData = struct {
     immunity_timer: ti.Timer = .{ .duration = 1.5 },
     color: rl.Color = .white,
     is_being_knocked: bool = false,
+    is_player: bool = false,
     
     pub fn update(self: *EntityData) void {
         if(self.vel.y < 15) self.vel.y += 0.5 * main.dt;
@@ -85,8 +87,8 @@ pub const EntityData = struct {
         return rl.Rectangle{ .x = self.pos.x, .y = self.pos.y, .width = self.size.x, .height = self.size.y };
     }
     
-    fn colliding(self: *EntityData, tile: map.Tile) bool {
-        return rl.checkCollisionRecs(self.getRect(), tile.dest_rect);
+    fn colliding(self: *EntityData, rect: rl.Rectangle) bool {
+        return rl.checkCollisionRecs(self.getRect(), rect);
     }
     
     fn getDirectionX(self: *EntityData) CollisionDirectionX {
@@ -105,22 +107,30 @@ pub const EntityData = struct {
         } else return .NONE;
     }
     
-    fn collideX(self: *EntityData, tile: map.Tile, direction: CollisionDirectionX) void {
+    fn collideX(self: *EntityData, rect: rl.Rectangle, direction: CollisionDirectionX) void {
         self.collisionsX[@intFromEnum(direction)] = true;
         switch (direction) {
-            CollisionDirectionX.LEFT => self.pos.x = tile.dest_rect.x + tile.dest_rect.width,
-            CollisionDirectionX.RIGHT => self.pos.x = tile.dest_rect.x - self.size.x,
+            CollisionDirectionX.LEFT => self.pos.x = rect.x + rect.width,
+            CollisionDirectionX.RIGHT => self.pos.x = rect.x - self.size.x,
             else => {}
         }
     }
     
-    fn collideY(self: *EntityData, tile: map.Tile, direction: CollisionDirectionY) void {
+    fn collideY(self: *EntityData, rect: rl.Rectangle, direction: CollisionDirectionY) void {
         self.collisionsY[@intFromEnum(direction)] = true;
         self.vel.y = 0.1;
         switch (direction) {
-            CollisionDirectionY.UP => self.pos.y = tile.dest_rect.y + tile.dest_rect.height,
-            CollisionDirectionY.DOWN => self.pos.y = tile.dest_rect.y - self.size.y,
+            CollisionDirectionY.UP => self.pos.y = rect.y + rect.height,
+            CollisionDirectionY.DOWN => self.pos.y = rect.y - self.size.y,
             else => {}
+        }
+    }
+    
+    fn manageSolidCollisions(self: *EntityData, rect: rl.Rectangle, horizontal: bool) void {
+        if(self.colliding(rect) and horizontal) {
+            self.collideX(rect, self.getDirectionX());
+        } else if (self.colliding(rect) and !horizontal) {
+            self.collideY(rect, self.getDirectionY());
         }
     }
     
@@ -131,11 +141,18 @@ pub const EntityData = struct {
             switch (tile.type) {
                 map.TileType.AIR => {},
                 map.TileType.SOLID => {
-                    if(self.colliding(tile) and horizontal) {
-                        self.collideX(tile, self.getDirectionX());
-                    } else if (self.colliding(tile) and !horizontal) {
-                        self.collideY(tile, self.getDirectionY());
-                    }
+                    self.manageSolidCollisions(tile.dest_rect, horizontal);
+                }
+            }
+        }
+        
+        for (map.maps[main.current_map].objects) |object| {
+            switch (object.obj_type) {
+                obj.ObjectType.HAZARD => {
+                    if(self.colliding(object.rect) and self.is_player) self.health -= 100; 
+                },
+                obj.ObjectType.SOLID => {
+                    self.manageSolidCollisions(object.rect, horizontal);
                 }
             }
         }

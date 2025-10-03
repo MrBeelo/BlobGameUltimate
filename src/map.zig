@@ -5,6 +5,7 @@ const crsh = @import("crash.zig");
 const cam = @import("camera.zig");
 const scr = @import("screen.zig");
 const ene = @import("enemy.zig");
+const obj = @import("object.zig");
 
 pub const TileAtlas = struct {
     texture: rl.Texture2D,
@@ -34,7 +35,23 @@ pub const Map = struct {
     tile_size: f32,
     data: []Tile,
     player_spawn_pos: rl.Vector2 = .{ .x = 10, .y = 10 },
-    enemy_spawn_poses: []EnemySpawnPos = &[_]EnemySpawnPos{}
+    enemy_spawn_poses: []EnemySpawnPos = &[_]EnemySpawnPos{},
+    objects: []obj.Object = &[_]obj.Object{},
+    
+    pub fn reset(self: *Map) void {
+        main.player.reset();
+        ene.enemies.clearRetainingCapacity();
+        for (self.enemy_spawn_poses) |*enemy_spawn_pos| ene.summonEnemy(enemy_spawn_pos.enemy_type, enemy_spawn_pos.spawn_pos);
+    }
+    
+    pub fn draw(self: *Map) void {
+        for(self.data) |tile| {
+            if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cam.camera.target.x - cam.camera.offset.x, .y = cam.camera.target.y - cam.camera.offset.y, .width = scr.sim_size.x, .height = scr.sim_size.y })) {
+                rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
+                if(main.f3) for(self.objects) |*object| object.drawDebug();
+            }
+        }
+    }
 };
 
 pub var maps: []Map = undefined;
@@ -90,26 +107,12 @@ pub fn loadMap(path: []const u8) !Map {
     return Map{ .map_size = map_size, .tile_size = tile_size, .data = data };
 }
 
-pub fn loadMapEx(path: []const u8, player_spawn_pos: rl.Vector2, enemy_spawn_poses: []EnemySpawnPos) !Map {
+pub fn loadMapEx(path: []const u8, player_spawn_pos: rl.Vector2, enemy_spawn_poses: []EnemySpawnPos, objects: []obj.Object) !Map {
     var map = try loadMap(path);
     map.player_spawn_pos = player_spawn_pos;
     map.enemy_spawn_poses = enemy_spawn_poses;
+    map.objects = objects;
     return map;
-}
-
-pub fn resetMap() void {
-    main.player.reset();
-    ene.enemies.clearRetainingCapacity();
-    for (maps[main.current_map].enemy_spawn_poses) |*enemy_spawn_pos| {
-        ene.summonEnemy(enemy_spawn_pos.enemy_type, enemy_spawn_pos.spawn_pos);
-    }
-    //RESET ALL ENTITIES HERE
-}
-
-pub fn drawMap(map: Map) void {
-    for(map.data) |tile| {
-        if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cam.camera.target.x - cam.camera.offset.x, .y = cam.camera.target.y - cam.camera.offset.y, .width = scr.sim_size.x, .height = scr.sim_size.y })) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
-    }
 }
 
 pub fn loadTileAtlas() void {
@@ -128,9 +131,13 @@ pub fn initMaps() void {
     //TEMPORARY, MAKE A BETTER SYSTEM SO THAT YOU MINIMIZE DUPED CODE
     maps = main.mutateSlice(Map, &[_]Map{
         loadMapEx("res/data/test-map.json", .{ .x = 200, .y = 10 }, 
-            main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = 590, .y = 10 } } })) catch crsh.crash(.MAP_ERROR),
+            main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = 590, .y = 10 } } }),
+            main.mutateSlice(obj.Object, &[_]obj.Object{ obj.Object{ .rect = .init(1000, 250, 100, 100), .obj_type = .SOLID } })
+        ) catch crsh.crash(.MAP_ERROR),
         
         loadMapEx("res/data/test-map.json", .{ .x = 1000, .y = 10 }, 
-            main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = 590, .y = 10 } } })) catch crsh.crash(.MAP_ERROR),
+            main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = 590, .y = 10 } } }),
+            main.mutateSlice(obj.Object, &[_]obj.Object{ obj.Object{ .rect = .init(1000, 200, 100, 100), .obj_type = .SOLID } })
+        ) catch crsh.crash(.MAP_ERROR),
     });
 }
