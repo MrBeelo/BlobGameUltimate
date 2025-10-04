@@ -4,7 +4,8 @@ const main = @import("main.zig");
 
 pub const ObjectType = enum {
     SOLID,
-    HAZARD
+    HAZARD,
+    ADVANCE_MAP
 };
 
 pub const Object = struct {
@@ -15,6 +16,7 @@ pub const Object = struct {
         const color: rl.Color = switch (self.obj_type) {
             .SOLID => .orange,
             .HAZARD => .red,
+            .ADVANCE_MAP => .green
         };
         
         rl.drawRectangleLinesEx(self.rect, 5, color);

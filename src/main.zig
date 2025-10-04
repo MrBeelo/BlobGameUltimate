@@ -85,19 +85,18 @@ pub fn main() void {
         if(scr.target.texture.id != 0) rl.beginTextureMode(scr.target);
         rl.clearBackground(.white);
         
-        if(game_state == .PLAYING) {
+        if(game_state == .PLAYING or game_state == .MAP_TRANSITION) {
             rl.beginMode2D(cam.camera);
             map.maps[current_map].draw();
             for(ene.enemies.items) |*enemy| enemy.draw();
             player.draw();
             rl.endMode2D();
-        
             player.drawHealthBar();
         } else {
             men.drawMenus();
         }
         
-        if(f3) rl.drawText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), 10, 80, 32, .black);
+        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 80 }, .black);
         
         rl.endTextureMode();
         

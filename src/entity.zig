@@ -153,7 +153,10 @@ pub const EntityData = struct {
                 },
                 obj.ObjectType.SOLID => {
                     self.manageSolidCollisions(object.rect, horizontal);
-                }
+                },
+                obj.ObjectType.ADVANCE_MAP => {
+                    if(self.colliding(object.rect) and self.is_player) map.advanceMap();
+                } 
             }
         }
     }

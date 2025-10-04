@@ -2,6 +2,7 @@ const std = @import("std");
 const rl = @import("raylib");
 const main = @import("main.zig");
 const crsh = @import("crash.zig");
+const men = @import("menu.zig");
 
 pub const sim_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
 pub var window_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
@@ -22,5 +23,6 @@ pub fn updateTargetScale() void {
 pub fn drawTarget() void {
     const target_src = rl.Rectangle{ .x = 0, .y = 0, .width = @floatFromInt(target.texture.width), .height = @floatFromInt(-target.texture.height) };
     const target_dest = rl.Rectangle{ .x = (window_size.x - sim_size.x * target_scale) * 0.5, .y = (window_size.y - sim_size.y * target_scale) * 0.5, .width = sim_size.x * target_scale, .height = sim_size.y * target_scale };
-    rl.drawTexturePro(target.texture, target_src, target_dest, .zero(), 0, .white);
+    const color = if(main.game_state == .MAP_TRANSITION) men.map_transition_color else rl.Color.white;
+    rl.drawTexturePro(target.texture, target_src, target_dest, .zero(), 0, color);
 }

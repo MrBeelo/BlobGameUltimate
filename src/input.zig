@@ -7,6 +7,7 @@ const GameKey = enum {
     UP,
     DOWN,
     JUMP,
+    ATTACK,
     CONFIRM,
     F3,
     ESCAPE
@@ -46,6 +47,7 @@ pub fn updateInputManager() void {
     handleBothKeys(.w, .UP);
     handleBothKeys(.s, .DOWN);
     handlePressKey(.space, .JUMP);
+    handlePressKey(.k, .ATTACK);
     handlePressKey(.enter, .CONFIRM);
     handlePressKey(.f3, .F3);
     handlePressKey(.escape, .ESCAPE);

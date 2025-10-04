@@ -6,6 +6,7 @@ const cam = @import("camera.zig");
 const scr = @import("screen.zig");
 const ene = @import("enemy.zig");
 const obj = @import("object.zig");
+const men = @import("menu.zig");
 
 pub const TileAtlas = struct {
     texture: rl.Texture2D,
@@ -132,12 +133,27 @@ pub fn initMaps() void {
     maps = main.mutateSlice(Map, &[_]Map{
         loadMapEx("res/data/test-map.json", .{ .x = 200, .y = 10 }, 
             main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = 590, .y = 10 } } }),
-            main.mutateSlice(obj.Object, &[_]obj.Object{ obj.Object{ .rect = .init(1000, 250, 100, 100), .obj_type = .SOLID } })
+            main.mutateSlice(obj.Object, &[_]obj.Object{ obj.Object{ .rect = .init(1000, 250, 100, 100), .obj_type = .ADVANCE_MAP } })
         ) catch crsh.crash(.MAP_ERROR),
         
-        loadMapEx("res/data/test-map.json", .{ .x = 1000, .y = 10 }, 
+        loadMapEx("res/data/test-map.json", .{ .x = 400, .y = 10 }, 
             main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = 590, .y = 10 } } }),
             main.mutateSlice(obj.Object, &[_]obj.Object{ obj.Object{ .rect = .init(1000, 200, 100, 100), .obj_type = .SOLID } })
         ) catch crsh.crash(.MAP_ERROR),
     });
+}
+
+pub fn moveToMap(map_number: usize) void {
+    if(map_number < maps.len) {
+        main.current_map = map_number;
+        maps[main.current_map].reset();
+    }
+}
+
+pub fn advanceMap() void {
+    if(main.current_map + 1 < maps.len) {
+        men.changeGameState(.MAP_TRANSITION);
+        men.map_transition_timer.activate();
+        men.map_transition_map_changed = false;
+    }
 }

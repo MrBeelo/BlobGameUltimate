@@ -24,7 +24,7 @@ pub const Player = struct {
     pub fn update(self: *Player) void {
         if(inp.getHoldKey(.LEFT)) self.data.moveLeft() else if(inp.getHoldKey(.RIGHT)) self.data.moveRight() else if(!self.data.is_being_knocked) self.data.vel.x = 0;
         if(inp.getPressKey(.JUMP)) self.data.jump();
-        if(rl.isKeyPressed(.k)) self.sword.use();
+        if(inp.getPressKey(.ATTACK)) self.sword.use();
         
         self.data.update();
         self.data.updateAnimations(&self.animation_timer);
@@ -50,10 +50,11 @@ pub const Player = struct {
     }
     
     pub fn reset(self: *Player) void {
-        self.data.pos = map.maps[main.current_map].player_spawn_pos; //CHANGE WHEN YOU ADD MORE MAPS AND CUSTOM MAP SYSTEM
+        self.data.pos = map.maps[main.current_map].player_spawn_pos;
         self.data.vel = .zero();
         self.data.immunity_timer.activate();
         self.data.health = base_player_health;
+        self.data.is_player = true;
     }
 };
 
