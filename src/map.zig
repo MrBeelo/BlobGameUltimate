@@ -7,6 +7,7 @@ const scr = @import("screen.zig");
 const ene = @import("enemy.zig");
 const obj = @import("object.zig");
 const men = @import("menu.zig");
+const pl = @import("player.zig");
 
 pub const TileAtlas = struct {
     texture: rl.Texture2D,
@@ -16,7 +17,10 @@ pub const TileAtlas = struct {
 
 pub const TileType = enum {
     AIR,
-    SOLID
+    SOLID,
+    HAZARD,
+    CUSTOM,
+    TRIGGER
 };
 
 pub const Tile = struct {
@@ -48,7 +52,7 @@ pub const Map = struct {
     pub fn draw(self: *Map) void {
         for(self.data) |tile| {
             if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cam.camera.target.x - cam.camera.offset.x, .y = cam.camera.target.y - cam.camera.offset.y, .width = scr.sim_size.x, .height = scr.sim_size.y })) {
-                rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
+                if(tile.type != .TRIGGER or (tile.type == .TRIGGER and main.f3)) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
                 if(main.f3) for(self.objects) |*object| object.drawDebug();
             }
         }
@@ -81,31 +85,63 @@ pub fn loadMap(path: []const u8) !Map {
     const tile_size = @as(f32, @floatFromInt(parsed_map.get("tilewidth").?.integer));
     
     const data_array = layers_val.get("data").?.array;
+    var shifted_data_array = std.array_list.Managed(i32).init(main.allocator);
+    for(data_array.items) |d_array| {
+        const texture_number = @as(i32, @intCast(d_array.integer));
+        shifted_data_array.append(texture_number - 1) catch crsh.crash(.OUT_OF_MEMORY);
+    }
     
     var air_tiles: usize = 0;
-    for(data_array.items) |tile| { if(tile.integer == -1) air_tiles += 1; }
-    var data = try main.allocator.alloc(Tile, data_array.items.len - air_tiles);
+    for(shifted_data_array.items) |tile| { if(tile == -1) air_tiles += 1; }
+    var data = try main.allocator.alloc(Tile, shifted_data_array.items.len - air_tiles);
+    
+    var player_spawn_pos = rl.Vector2{ .x = 0, .y = 0 };
+    var enemy_spawn_poses = std.array_list.Managed(EnemySpawnPos).init(main.allocator);
+    var spike_object_recs = std.array_list.Managed(rl.Rectangle).init(main.allocator);
+    const advance_map_rec = rl.Rectangle{ .x = map_size.x * tile_size + pl.def_player_size.x / 2, .y = 0, .width = 10, .height = map_size.y * tile_size};
     
     var variable_index: usize = 0;
-    for(data_array.items, 0..) |d_array, index| {
-        const texture_number = @as(i32, @intCast(d_array.integer));
+    for(shifted_data_array.items, 0..) |texture_number, index| {
         const tile_type: TileType = switch(texture_number) {
-            0,1 => .SOLID,
+            0...23 => .SOLID,
+            24...31 => .HAZARD,
+            32...39 => .CUSTOM,
+            40...47 => .TRIGGER,
             else => .AIR
         };
+        
+        const tile_pos: rl.Vector2 = .{ .x = @mod(@as(f32, @floatFromInt(index)), map_size.x) * tile_size, .y = @floor(@as(f32, @floatFromInt(index)) / map_size.x) * tile_size };
         
         if(tile_type != .AIR) {
             data[variable_index] = Tile{
                 .src_rect = .{ .x = @as(f32, @floatFromInt(@mod(texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .y = @as(f32, @floatFromInt(@divFloor(texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .width = test_tile_atlas.atlas_tile_size, .height = test_tile_atlas.atlas_tile_size },
-                .dest_rect = .{ .x = @mod(@as(f32, @floatFromInt(index)), map_size.x) * tile_size, .y = @floor(@as(f32, @floatFromInt(index)) / map_size.x) * tile_size, .width = tile_size, .height = tile_size },
+                .dest_rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size },
                 .type = tile_type,
                 .texture_number = texture_number
             };
             variable_index += 1;
         }
+        
+        const horiz_spike_buffer: f32 = 5;
+        const vert_spike_buffer: f32 = 8;
+                
+        switch (texture_number) {
+            32 => spike_object_recs.append(.{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }) catch crsh.crash(.OUT_OF_MEMORY),
+            40 => player_spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y },
+            41 => enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
+            42 => enemy_spawn_poses.append(.{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
+            else => {}
+        }
     }
     
-    return Map{ .map_size = map_size, .tile_size = tile_size, .data = data };
+    var objects = std.array_list.Managed(obj.Object).init(main.allocator);
+    for(spike_object_recs.items) |item| objects.append(.{ .obj_type = .HAZARD, .rect = item }) catch crsh.crash(.OUT_OF_MEMORY);
+    objects.append(.{ .obj_type = .ADVANCE_MAP, .rect = advance_map_rec }) catch crsh.crash(.OUT_OF_MEMORY);
+        
+    data_array.deinit();
+    shifted_data_array.deinit();
+    
+    return Map{ .map_size = map_size, .tile_size = tile_size, .data = data, .player_spawn_pos = player_spawn_pos, .enemy_spawn_poses = enemy_spawn_poses.items, .objects = objects.items };
 }
 
 pub fn loadMapEx(path: []const u8, player_spawn_pos: rl.Vector2, enemy_spawn_poses: []EnemySpawnPos, objects: []obj.Object) !Map {
@@ -131,15 +167,18 @@ pub fn unloadTileAtlas() void {
 pub fn initMaps() void {
     //TEMPORARY, MAKE A BETTER SYSTEM SO THAT YOU MINIMIZE DUPED CODE
     maps = main.mutateSlice(Map, &[_]Map{
-        loadMapEx("res/data/test-map.json", .{ .x = 200, .y = 10 }, 
-            main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = 590, .y = 10 } } }),
-            main.mutateSlice(obj.Object, &[_]obj.Object{ obj.Object{ .rect = .init(1000, 250, 100, 100), .obj_type = .ADVANCE_MAP } })
-        ) catch crsh.crash(.MAP_ERROR),
+        //loadMapEx("res/data/test-map.json", .{ .x = 200, .y = 10 }, 
+            //main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = 590, .y = 10 } } }),
+            //main.mutateSlice(obj.Object, &[_]obj.Object{ obj.Object{ .rect = .init(1000, 250, 100, 100), .obj_type = .ADVANCE_MAP } })
+            //) catch crsh.crash(.MAP_ERROR),
         
-        loadMapEx("res/data/test-map.json", .{ .x = 400, .y = 10 }, 
-            main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = 590, .y = 10 } } }),
-            main.mutateSlice(obj.Object, &[_]obj.Object{ obj.Object{ .rect = .init(1000, 200, 100, 100), .obj_type = .SOLID } })
-        ) catch crsh.crash(.MAP_ERROR),
+        //loadMapEx("res/data/test-map-2.json", .{ .x = 400, .y = 10 }, 
+            //main.mutateSlice(EnemySpawnPos, &[_]EnemySpawnPos{ EnemySpawnPos{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = 590, .y = 10 } } }),
+            //main.mutateSlice(obj.Object, &[_]obj.Object{ obj.Object{ .rect = .init(1000, 200, 100, 100), .obj_type = .SOLID } })
+            //) catch crsh.crash(.MAP_ERROR),
+        
+        loadMap("res/data/test-map.json") catch crsh.crash(.MAP_ERROR),
+        loadMap("res/data/test-map-2.json") catch crsh.crash(.MAP_ERROR)
     });
 }
 

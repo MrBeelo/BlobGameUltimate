@@ -34,7 +34,7 @@ pub const Enemy = struct {
             self.data.update();
             self.data.updateAnimations(&self.animation_timer);
             
-            if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !self.data.immunity_timer.active and main.player.data.pos.y < self.data.pos.y - pl.def_player_size.y + 12) {
+            if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !self.data.immunity_timer.active and main.player.data.pos.y < self.data.pos.y - pl.def_player_size.y / 2) {
                 main.player.data.jumpMidAir();
                 self.data.health -= 10;
                 self.data.hit_timer.activate();
@@ -164,7 +164,7 @@ pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
     enemy.data.hit_timer.init();
     enemy.data.immunity_timer.init();
     
-    enemy.data.immunity_timer.duration = 0.6;
+    enemy.data.immunity_timer.duration = 1;
     
     return enemy;
 }

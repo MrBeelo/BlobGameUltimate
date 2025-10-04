@@ -3,8 +3,9 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "test-tileset.tmx",
+    "activeFile": "",
     "expandedProjectPaths": [
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -12,8 +13,8 @@
             "scale": 0.5695052083333333,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 811.2305089395948,
-                "y": -568.9149023732224
+                "x": 506.58009053911934,
+                "y": -640.0292651698751
             }
         },
         "test-tileset.tsx": {
@@ -22,18 +23,18 @@
         }
     },
     "last.exportedFilePath": "/home/mrbeelo/Projects/Games/BlobGameUltimate/tiled",
-    "last.imagePath": "/home/mrbeelo/Projects/Games/BlobGameUltimate/res",
+    "last.imagePath": "/home/mrbeelo/Projects/Games/BlobGameUltimate/res/sprite",
     "map.height": 34,
-    "map.lastUsedExportFilter": "CSV files (*.csv)",
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
     "map.width": 60,
     "openFiles": [
-        "test-tileset.tmx"
+        "test-tileset.tsx"
     ],
     "project": "blobgameultimate.tiled-project",
     "recentFiles": [
-        "test-tileset.tmx",
-        "test-tileset.tsx"
+        "test-tileset.tsx",
+        "test-tileset.tmx"
     ],
     "tileset.lastUsedFormat": "tsx"
 }

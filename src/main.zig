@@ -38,7 +38,7 @@ pub fn fullyTintTexture(texture: rl.Texture2D, color: rl.Color) rl.Texture2D {
 }
 
 pub fn main() void {
-    rl.setConfigFlags(.{ .window_resizable = true });
+    rl.setConfigFlags(.{ .window_resizable = true, .vsync_hint = true });
     
     rl.initWindow(@intFromFloat(scr.window_size.x), @intFromFloat(scr.window_size.y), "Blob Game: Ultimate");
     defer rl.closeWindow();

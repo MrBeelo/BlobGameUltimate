@@ -42,9 +42,11 @@ pub const EntityData = struct {
     color: rl.Color = .white,
     is_being_knocked: bool = false,
     is_player: bool = false,
+    can_walljump: bool = false,
     
     pub fn update(self: *EntityData) void {
         if(self.vel.y < 15) self.vel.y += 0.5 * main.dt;
+        self.can_walljump = false;
         
         self.pos.x += self.vel.x * main.dt;
         self.manageCollisions(true);
@@ -91,6 +93,10 @@ pub const EntityData = struct {
         return rl.checkCollisionRecs(self.getRect(), rect);
     }
     
+    fn walljumpCollisionCheck(self: *EntityData, rect: rl.Rectangle) bool {
+        return rl.checkCollisionRecs(self.getWallJumpHitBox(), rect);
+    }
+    
     fn getDirectionX(self: *EntityData) CollisionDirectionX {
         if (self.vel.x < 0) {
             return .LEFT;
@@ -132,6 +138,8 @@ pub const EntityData = struct {
         } else if (self.colliding(rect) and !horizontal) {
             self.collideY(rect, self.getDirectionY());
         }
+        
+        if(horizontal and self.walljumpCollisionCheck(rect)) self.can_walljump = true;
     }
     
     pub fn manageCollisions(self: *EntityData, horizontal: bool) void {
@@ -139,9 +147,12 @@ pub const EntityData = struct {
         
         for (map.maps[main.current_map].data) |tile| {
             switch (tile.type) {
-                map.TileType.AIR => {},
-                map.TileType.SOLID => {
+                .AIR,.CUSTOM,.TRIGGER => {},
+                .SOLID => {
                     self.manageSolidCollisions(tile.dest_rect, horizontal);
+                },
+                .HAZARD => {
+                    if(self.colliding(tile.dest_rect) and self.is_player) self.health -= 100; 
                 }
             }
         }
@@ -194,5 +205,10 @@ pub const EntityData = struct {
     
     pub fn getHit(self: *EntityData, damage: f32) void {
         self.health -= damage;
+    }
+    
+    pub fn getWallJumpHitBox(self: *EntityData) rl.Rectangle {
+        const thickness: f32 = 5;
+        return .{ .x = self.pos.x - thickness, .y = self.pos.y, .width = self.size.x + thickness * 2, .height = self.size.y }; 
     }
 };

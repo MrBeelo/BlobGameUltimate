@@ -21,9 +21,11 @@ pub const Player = struct {
     animation_timer: ti.Timer = ti.Timer{ .auto_start = true, .duration = 0.3, .repeat = true },
     sword: sw.Sword = .{},
     
+    
     pub fn update(self: *Player) void {
         if(inp.getHoldKey(.LEFT)) self.data.moveLeft() else if(inp.getHoldKey(.RIGHT)) self.data.moveRight() else if(!self.data.is_being_knocked) self.data.vel.x = 0;
         if(inp.getPressKey(.JUMP)) self.data.jump();
+        if(inp.getPressKey(.JUMP) and self.data.can_walljump) self.data.jumpMidAir();
         if(inp.getPressKey(.ATTACK)) self.sword.use();
         
         self.data.update();
@@ -41,6 +43,7 @@ pub const Player = struct {
             self.data.getRect(), .zero(), 0, self.data.color);
         self.sword.draw();
         if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .orange);
+        if (main.f3) rl.drawRectangleLinesEx(self.data.getWallJumpHitBox(), 3, .sky_blue);
     }
     
     pub fn drawHealthBar(self: *Player) void {
