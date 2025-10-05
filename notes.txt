@@ -9,6 +9,4 @@ Backgrounds
 
 // TODOS // 
 Make a couple of maps
-Add sword (not priority)
 Add collectible
-Add savefile

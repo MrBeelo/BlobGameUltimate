@@ -45,7 +45,7 @@ pub const Button = struct {
             .change_game_state => |game_state| changeGameState(game_state),
             .exit => main.should_exit = true,
             .reset_player => {
-                map.maps[main.current_map].reset();
+                map.maps[main.savefile.current_map].reset();
                 changeGameState(.PLAYING);
             }
         }
@@ -109,7 +109,7 @@ pub const Menu = struct {
                 
                 if(!map_transition_map_changed) {
                     map_transition_map_changed = true;
-                    map.moveToMap(main.current_map + 1);
+                    map.moveToMap(main.savefile.current_map + 1);
                 }
             } else {
                 map_transition_color = rl.colorLerp(.white, .black, (@as(f32, @floatCast(rl.getTime())) - map_transition_timer.start_time) * 2 / map_transition_timer.duration);

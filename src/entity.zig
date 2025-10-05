@@ -145,7 +145,7 @@ pub const EntityData = struct {
     pub fn manageCollisions(self: *EntityData, horizontal: bool) void {
         if(horizontal) self.collisionsX = [_]bool{ false } ** 2 else self.collisionsY = [_]bool{ false } ** 2;
         
-        for (map.maps[main.current_map].data) |tile| {
+        for (map.maps[main.savefile.current_map].data) |tile| {
             switch (tile.type) {
                 .AIR,.CUSTOM,.TRIGGER => {},
                 .SOLID => {
@@ -157,7 +157,7 @@ pub const EntityData = struct {
             }
         }
         
-        for (map.maps[main.current_map].objects) |object| {
+        for (map.maps[main.savefile.current_map].objects) |object| {
             switch (object.obj_type) {
                 obj.ObjectType.HAZARD => {
                     if(self.colliding(object.rect) and self.is_player) self.health -= 100; 

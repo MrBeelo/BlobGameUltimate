@@ -10,6 +10,7 @@ const ene = @import("enemy.zig");
 const men = @import("menu.zig");
 const txt = @import("text.zig");
 const sw = @import("sword.zig");
+const sav = @import("savefile.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -18,7 +19,8 @@ pub var f3 = false;
 pub var player: pl.Player = undefined;
 pub var game_state: men.GameState = .MAIN;
 pub var should_exit: bool = false;
-pub var current_map: usize = 0;
+//pub var current_map: usize = 0;
+pub var savefile: sav.SaveFile = undefined;
 
 pub fn mutateSlice(comptime T: type, slice: []const T) []T {
     const mut_slice = allocator.alloc(T, slice.len) catch crsh.crash(.OUT_OF_MEMORY);
@@ -67,6 +69,9 @@ pub fn main() void {
     sw.loadSword();
     defer sw.unloadSword();
     
+    sav.loadSaveFile(&savefile) catch crsh.crash(.SAVE_ERROR);
+    //sav.saveSaveFile(savefile) catch crsh.crash(.SAVE_ERROR);
+    
     while (!rl.windowShouldClose() and !should_exit) {
         dt = rl.getFrameTime() * sim_fps;
         inp.updateInputManager();
@@ -87,7 +92,7 @@ pub fn main() void {
         
         if(game_state == .PLAYING or game_state == .MAP_TRANSITION) {
             rl.beginMode2D(cam.camera);
-            map.maps[current_map].draw();
+            map.maps[savefile.current_map].draw();
             for(ene.enemies.items) |*enemy| enemy.draw();
             player.draw();
             rl.endMode2D();
@@ -97,6 +102,8 @@ pub fn main() void {
         }
         
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 80 }, .black);
+        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Current Map: {d}", .{savefile.current_map}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 120 }, .black);
+        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Hankies: {d}", .{savefile.hankies}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 160 }, .black);
         
         rl.endTextureMode();
         
