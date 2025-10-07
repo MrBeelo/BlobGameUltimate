@@ -22,6 +22,6 @@ pub const Object = struct {
             .MILK => .blue
         };
         
-        if(!self.is_disabled) rl.drawRectangleLinesEx(self.rect, 5, color);
+        if(!self.is_disabled) rl.drawRectangleLinesEx(self.rect, 3, color);
     }
 };

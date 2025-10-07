@@ -31,7 +31,11 @@ pub const Tile = struct {
     texture_number: i32,
     should_draw: bool = true,
     y_offset: f32 = 0,
-    id: usize
+    id: usize,
+    
+    pub fn getSimDestRect(self: *Tile) rl.Rectangle {
+        return .{ .x = self.dest_rect.x, .y = self.dest_rect.y + self.y_offset, .width = self.dest_rect.width, .height = self.dest_rect.height };
+    }
 };
 
 pub const EnemySpawnPos = struct {
@@ -55,10 +59,17 @@ pub const Map = struct {
         for (self.enemy_spawn_poses) |*enemy_spawn_pos| ene.summonEnemy(enemy_spawn_pos.enemy_type, enemy_spawn_pos.spawn_pos);
     }
     
+    pub fn update(self: *Map) void {
+        for(self.milk_poses) |milk_pos_index| {
+            const time_diff = @as(f32, @floatCast(rl.getTime() - @floor(rl.getTime())));
+            self.data[milk_pos_index - 1].y_offset = @sin(time_diff * 2 * std.math.pi) * 5;
+        }
+    }
+    
     pub fn draw(self: *Map) void {
-        for(self.data) |tile| {
+        for(self.data) |*tile| {
             if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cam.camera.target.x - cam.camera.offset.x, .y = cam.camera.target.y - cam.camera.offset.y, .width = scr.sim_size.x, .height = scr.sim_size.y })) {
-                if((tile.type != .TRIGGER or (tile.type == .TRIGGER and main.f3)) and tile.should_draw) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
+                if((tile.type != .TRIGGER or (tile.type == .TRIGGER and main.f3)) and tile.should_draw) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.getSimDestRect(), .zero(), 0, .white);
                 if(main.f3) for(self.objects) |*object| object.drawDebug();
             }
         }
@@ -131,8 +142,8 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
             variable_index += 1;
         }
         
-        const horiz_spike_buffer: f32 = 5;
-        const vert_spike_buffer: f32 = 8;
+        const horiz_spike_buffer: f32 = 7;
+        const vert_spike_buffer: f32 = 15;
                 
         switch (texture_number) {
             32 => objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }}) catch crsh.crash(.OUT_OF_MEMORY),

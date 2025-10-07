@@ -160,26 +160,24 @@ pub const EntityData = struct {
         }
         
         for (map.maps[main.savefile.current_map].objects) |*object| {
-            if(!object.is_disabled) {
-                switch (object.obj_type) {
-                    .HAZARD => { if(self.colliding(object.rect) and self.is_player) self.health -= 100; },
-                    .SOLID => { self.manageSolidCollisions(object.rect, horizontal); },
-                    .ADVANCE_MAP => { if(self.colliding(object.rect) and self.is_player) map.advanceMap(); },
-                    .MILK => { if(self.colliding(object.rect) and self.is_player) {
+            if(!object.is_disabled) switch (object.obj_type) {
+                .HAZARD => { if(self.colliding(object.rect) and self.is_player) self.health -= 100; },
+                .SOLID => { self.manageSolidCollisions(object.rect, horizontal); },
+                .ADVANCE_MAP => { if(self.colliding(object.rect) and self.is_player) map.advanceMap(); },
+                .MILK => {
+                    if(self.colliding(object.rect) and self.is_player) {
                         const m = map.maps[main.savefile.current_map];
                         for(m.milk_poses) |milk_pos_index| {
                             const milk_tile = m.data[milk_pos_index - 1];
-                            if(milk_tile.dest_rect.x == object.rect.x and milk_tile.dest_rect.y == object.rect.y) {
-                                m.data[milk_pos_index - 1].should_draw = false;
-                                object.is_disabled = true;
-                                main.savefile.milk += 1;
-                                sav.saveSaveFile(&main.savefile) catch crsh.crash(.SAVE_ERROR);
-                            }
+                            if(!(milk_tile.dest_rect.x == object.rect.x and milk_tile.dest_rect.y == object.rect.y)) break;
+                            m.data[milk_pos_index - 1].should_draw = false;
+                            object.is_disabled = true;
+                            main.savefile.milk += 1;
+                            sav.saveSaveFile(&main.savefile) catch crsh.crash(.SAVE_ERROR);
                         }
                     }
-                    }
                 }
-            }
+            };
         }
     }
     
