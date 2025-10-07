@@ -1,12 +1,13 @@
 const std = @import("std");
 const rl = @import("raylib");
 const main = @import("main.zig");
+const crsh = @import("crash.zig");
 
 const savefile_path = "res/data/savefile.json";
 
 pub const SaveFile = struct {
     current_map: usize,
-    hankies: i32
+    milk: i32
 };
 
 pub fn loadSaveFile(savefile: *SaveFile) !void {
@@ -22,12 +23,20 @@ pub fn loadSaveFile(savefile: *SaveFile) !void {
     
     _ = try file.readAll(buffer);
     
-    var parsed_value: std.json.Parsed(std.json.Value) = try std.json.parseFromSlice(std.json.Value, main.allocator, buffer, .{});
+    var parsed_value: std.json.Parsed(std.json.Value) = std.json.parseFromSlice(std.json.Value, main.allocator, buffer, .{}) catch |err| switch (err) {
+        error.UnexpectedEndOfInput => {
+            var new_savefile = newSaveFile();
+            try saveSaveFile(&new_savefile);
+            savefile.* = new_savefile;
+            return;
+        },
+        else => return err
+    };
     defer parsed_value.deinit();
     
     const parsed_savefile = parsed_value.value.object;
     savefile.current_map = @intCast(parsed_savefile.get("current_map").?.integer);
-    savefile.hankies = @intCast(parsed_savefile.get("hankies").?.integer);
+    savefile.milk = @intCast(parsed_savefile.get("milk").?.integer);
 }
 
 pub fn saveSaveFile(savefile: *SaveFile) !void {
@@ -49,5 +58,8 @@ pub fn saveSaveFile(savefile: *SaveFile) !void {
 }
 
 pub fn newSaveFile() SaveFile {
-    return .{ .current_map = 0, .hankies = 0 };
+    return .{ 
+        .current_map = 0, 
+        .milk = 0
+    };
 }

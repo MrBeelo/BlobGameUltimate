@@ -19,7 +19,6 @@ pub var f3 = false;
 pub var player: pl.Player = undefined;
 pub var game_state: men.GameState = .MAIN;
 pub var should_exit: bool = false;
-//pub var current_map: usize = 0;
 pub var savefile: sav.SaveFile = undefined;
 
 pub fn mutateSlice(comptime T: type, slice: []const T) []T {
@@ -70,7 +69,6 @@ pub fn main() void {
     defer sw.unloadSword();
     
     sav.loadSaveFile(&savefile) catch crsh.crash(.SAVE_ERROR);
-    //sav.saveSaveFile(savefile) catch crsh.crash(.SAVE_ERROR);
     
     while (!rl.windowShouldClose() and !should_exit) {
         dt = rl.getFrameTime() * sim_fps;
@@ -103,7 +101,8 @@ pub fn main() void {
         
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 80 }, .black);
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Current Map: {d}", .{savefile.current_map}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 120 }, .black);
-        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Hankies: {d}", .{savefile.hankies}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 160 }, .black);
+        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Milk: {d}", .{savefile.milk}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 160 }, .black);
+        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Position: [{d}, {d}]", .{player.data.pos.x, player.data.pos.y}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 200 }, .black);
         
         rl.endTextureMode();
         

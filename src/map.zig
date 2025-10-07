@@ -28,7 +28,10 @@ pub const Tile = struct {
     src_rect: rl.Rectangle,
     dest_rect: rl.Rectangle,
     type: TileType,
-    texture_number: i32
+    texture_number: i32,
+    should_draw: bool = true,
+    y_offset: f32 = 0,
+    id: usize
 };
 
 pub const EnemySpawnPos = struct {
@@ -39,10 +42,12 @@ pub const EnemySpawnPos = struct {
 pub const Map = struct {
     map_size: rl.Vector2,
     tile_size: f32,
+    id: usize,
     data: []Tile,
     player_spawn_pos: rl.Vector2 = .{ .x = 10, .y = 10 },
     enemy_spawn_poses: []EnemySpawnPos = &[_]EnemySpawnPos{},
     objects: []obj.Object = &[_]obj.Object{},
+    milk_poses: []usize = &[_]usize{},
     
     pub fn reset(self: *Map) void {
         main.player.reset();
@@ -53,7 +58,7 @@ pub const Map = struct {
     pub fn draw(self: *Map) void {
         for(self.data) |tile| {
             if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cam.camera.target.x - cam.camera.offset.x, .y = cam.camera.target.y - cam.camera.offset.y, .width = scr.sim_size.x, .height = scr.sim_size.y })) {
-                if(tile.type != .TRIGGER or (tile.type == .TRIGGER and main.f3)) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
+                if((tile.type != .TRIGGER or (tile.type == .TRIGGER and main.f3)) and tile.should_draw) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.dest_rect, .zero(), 0, .white);
                 if(main.f3) for(self.objects) |*object| object.drawDebug();
             }
         }
@@ -63,7 +68,7 @@ pub const Map = struct {
 pub var maps: []Map = undefined;
 var test_tile_atlas: TileAtlas = undefined;
 
-pub fn loadMap(path: []const u8) !Map {
+pub fn loadMap(path: []const u8, id: usize) !Map {
     var file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
     
@@ -98,8 +103,10 @@ pub fn loadMap(path: []const u8) !Map {
     
     var player_spawn_pos = rl.Vector2{ .x = 0, .y = 0 };
     var enemy_spawn_poses = std.array_list.Managed(EnemySpawnPos).init(main.allocator);
-    var spike_object_recs = std.array_list.Managed(rl.Rectangle).init(main.allocator);
-    const advance_map_rec = rl.Rectangle{ .x = map_size.x * tile_size + pl.def_player_size.x / 2, .y = 0, .width = 10, .height = map_size.y * tile_size};
+    var milk_poses = std.array_list.Managed(usize).init(main.allocator);
+    var objects = std.array_list.Managed(obj.Object).init(main.allocator);
+    
+    objects.append(.{ .obj_type = .ADVANCE_MAP, .rect = .{ .x = map_size.x * tile_size + pl.def_player_size.x / 2, .y = 0, .width = 10, .height = map_size.y * tile_size }}) catch crsh.crash(.OUT_OF_MEMORY);
     
     var variable_index: usize = 0;
     for(shifted_data_array.items, 0..) |texture_number, index| {
@@ -118,7 +125,8 @@ pub fn loadMap(path: []const u8) !Map {
                 .src_rect = .{ .x = @as(f32, @floatFromInt(@mod(texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .y = @as(f32, @floatFromInt(@divFloor(texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .width = test_tile_atlas.atlas_tile_size, .height = test_tile_atlas.atlas_tile_size },
                 .dest_rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size },
                 .type = tile_type,
-                .texture_number = texture_number
+                .texture_number = texture_number,
+                .id = variable_index
             };
             variable_index += 1;
         }
@@ -127,22 +135,19 @@ pub fn loadMap(path: []const u8) !Map {
         const vert_spike_buffer: f32 = 8;
                 
         switch (texture_number) {
-            32 => spike_object_recs.append(.{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }) catch crsh.crash(.OUT_OF_MEMORY),
+            32 => objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }}) catch crsh.crash(.OUT_OF_MEMORY),
+            33 => { objects.append(.{ .obj_type = .MILK, .rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size } }) catch crsh.crash(.OUT_OF_MEMORY); milk_poses.append(variable_index) catch crsh.crash(.OUT_OF_MEMORY); },
             40 => player_spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y },
             41 => enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
             42 => enemy_spawn_poses.append(.{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
             else => {}
         }
     }
-    
-    var objects = std.array_list.Managed(obj.Object).init(main.allocator);
-    for(spike_object_recs.items) |item| objects.append(.{ .obj_type = .HAZARD, .rect = item }) catch crsh.crash(.OUT_OF_MEMORY);
-    objects.append(.{ .obj_type = .ADVANCE_MAP, .rect = advance_map_rec }) catch crsh.crash(.OUT_OF_MEMORY);
-        
+            
     data_array.deinit();
     shifted_data_array.deinit();
     
-    return Map{ .map_size = map_size, .tile_size = tile_size, .data = data, .player_spawn_pos = player_spawn_pos, .enemy_spawn_poses = enemy_spawn_poses.items, .objects = objects.items };
+    return Map{ .map_size = map_size, .tile_size = tile_size, .id = id, .data = data, .player_spawn_pos = player_spawn_pos, .enemy_spawn_poses = enemy_spawn_poses.items, .objects = objects.items, .milk_poses = milk_poses.items };
 }
 
 pub fn loadMapEx(path: []const u8, player_spawn_pos: rl.Vector2, enemy_spawn_poses: []EnemySpawnPos, objects: []obj.Object) !Map {
@@ -167,8 +172,8 @@ pub fn unloadTileAtlas() void {
 
 pub fn initMaps() void {
     maps = main.mutateSlice(Map, &[_]Map{
-        loadMap("res/data/test-map.json") catch crsh.crash(.MAP_ERROR),
-        loadMap("res/data/test-map-2.json") catch crsh.crash(.MAP_ERROR)
+        loadMap("res/data/test-map.json", 0) catch crsh.crash(.MAP_ERROR),
+        loadMap("res/data/test-map-2.json", 1) catch crsh.crash(.MAP_ERROR)
     });
 }
 

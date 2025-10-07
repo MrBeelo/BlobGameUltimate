@@ -21,7 +21,6 @@ pub const Player = struct {
     animation_timer: ti.Timer = ti.Timer{ .auto_start = true, .duration = 0.3, .repeat = true },
     sword: sw.Sword = .{},
     
-    
     pub fn update(self: *Player) void {
         if(inp.getHoldKey(.LEFT)) self.data.moveLeft() else if(inp.getHoldKey(.RIGHT)) self.data.moveRight() else if(!self.data.is_being_knocked) self.data.vel.x = 0;
         if(inp.getPressKey(.JUMP)) self.data.jump();

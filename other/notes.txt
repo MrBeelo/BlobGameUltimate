@@ -9,4 +9,3 @@ Backgrounds
 
 // TODOS // 
 Make a couple of maps
-Add collectible
