@@ -60,7 +60,10 @@ pub const EntityData = struct {
         
         self.color = if(self.immunity_timer.active and !self.hit_timer.active) rl.Color{ .r = 255, .g = 255, .b = 255, .a = 125 } else .white;
         
-        if(self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)] and self.is_being_knocked) self.is_being_knocked = false;
+        if(self.is_being_knocked) {
+            if((self.is_player and self.vel.y >= 0) or (!self.is_player and self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)])) self.is_being_knocked = false;
+        }
+        //if(self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)] and self.is_being_knocked) self.is_being_knocked = false;
     }
     
     pub fn moveLeft(self: *EntityData) void {
@@ -77,8 +80,8 @@ pub const EntityData = struct {
         if(self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)]) self.vel.y = -10;
     }
     
-    pub fn jumpMidAir(self: *EntityData) void {
-        self.vel.y = -10;
+    pub fn jumpMidAir(self: *EntityData, power: f32) void {
+        self.vel.y = -power;
     }
     
     pub fn knockBack(self: *EntityData, right: bool, power: f32) void {

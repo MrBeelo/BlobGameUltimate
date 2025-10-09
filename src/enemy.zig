@@ -35,7 +35,7 @@ pub const Enemy = struct {
             self.data.updateAnimations(&self.animation_timer);
             
             if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !self.data.immunity_timer.active and main.player.data.pos.y < self.data.pos.y - pl.def_player_size.y / 2) {
-                main.player.data.jumpMidAir();
+                main.player.data.jumpMidAir(6);
                 self.data.health -= 10;
                 self.data.hit_timer.activate();
                 self.data.immunity_timer.activate();

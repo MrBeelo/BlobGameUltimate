@@ -11,6 +11,7 @@ const men = @import("menu.zig");
 const txt = @import("text.zig");
 const sw = @import("sword.zig");
 const sav = @import("savefile.zig");
+const bg = @import("background.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -36,6 +37,25 @@ pub fn fullyTintTexture(texture: rl.Texture2D, color: rl.Color) rl.Texture2D {
     const new_texture = rl.loadTextureFromImage(image) catch crsh.crash(.RAYLIB_ERROR);
     rl.unloadImage(image);
     return new_texture;
+}
+
+pub fn updateGame() void {
+    bg.updateBackground(.BB1);
+    map.maps[savefile.current_map].update();
+    for(ene.enemies.items) |*enemy| enemy.update();
+    player.update();
+    cam.updateCamera();
+    if(inp.getPressKey(.ESCAPE)) men.changeGameState(.PAUSED);
+}
+
+pub fn drawGame() void {
+    bg.drawBackground(.BB1);
+    rl.beginMode2D(cam.camera);
+    map.maps[savefile.current_map].draw();
+    for(ene.enemies.items) |*enemy| enemy.draw();
+    player.draw();
+    rl.endMode2D();
+    player.drawHealthBar();
 }
 
 pub fn main() void {
@@ -68,6 +88,9 @@ pub fn main() void {
     sw.loadSword();
     defer sw.unloadSword();
     
+    bg.loadBackgrounds();
+    defer bg.unloadBackgrounds();
+    
     sav.loadSaveFile(&savefile) catch crsh.crash(.SAVE_ERROR);
     
     while (!rl.windowShouldClose() and !should_exit) {
@@ -76,26 +99,16 @@ pub fn main() void {
         if(inp.getPressKey(.F3)) f3 = !f3;
         scr.updateTargetScale();
         
-        if(game_state == .PLAYING) {
-            map.maps[savefile.current_map].update();
-            for(ene.enemies.items) |*enemy| enemy.update();
-            player.update();
-            cam.updateCamera();
-            if(inp.getPressKey(.ESCAPE)) men.changeGameState(.PAUSED);
-        } else {
-            men.updateMenus();
-        }
+        if(game_state == .PLAYING) updateGame() else men.updateMenus();
         
         if(scr.target.texture.id != 0) rl.beginTextureMode(scr.target);
         rl.clearBackground(.white);
         
         if(game_state == .PLAYING or game_state == .MAP_TRANSITION) {
-            rl.beginMode2D(cam.camera);
-            map.maps[savefile.current_map].draw();
-            for(ene.enemies.items) |*enemy| enemy.draw();
-            player.draw();
-            rl.endMode2D();
-            player.drawHealthBar();
+            drawGame();
+        } else if(game_state == .PAUSED) {
+            drawGame();
+            men.drawMenus();
         } else {
             men.drawMenus();
         }
