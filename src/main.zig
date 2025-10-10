@@ -12,6 +12,7 @@ const txt = @import("text.zig");
 const sw = @import("sword.zig");
 const sav = @import("savefile.zig");
 const bg = @import("background.zig");
+const sta = @import("stars.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -90,6 +91,8 @@ pub fn main() void {
     
     bg.loadBackgrounds();
     defer bg.unloadBackgrounds();
+    
+    sta.initStars();
     
     sav.loadSaveFile(&savefile) catch crsh.crash(.SAVE_ERROR);
     

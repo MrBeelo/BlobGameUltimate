@@ -1,5 +1,6 @@
 Blob Game: Ultimate Notes
 Hey me! Here are some notes/ todos for the game. Good luck I guess? ( Writing on 2/9/25)
+GOAL: END OF FEBRUARY
 
 // IDEAS //
 A new art style, along with the old 2 ones
@@ -8,5 +9,68 @@ A total of 5 bosses, 3 attacks each, with final boss being either giant cube or 
 Backgrounds
 shop that takes milk :O
 
-// TODOS // 
-Make a couple of maps
+// AREAS //
+1. Plains
+2. The Dungeon
+3. The Caves
+4. Bad Memories (bb1 and bb2)
+5. Ascention
+
+// BOSSES //
+1. Big Triangle Guardian
+2. The Dungeon Creeper
+3. Giant Spidey
+4. Purple Triangle Boss (from bb1)
+5. Mr. Beelo (like grand mother silk/the radiance)
+
+// STORYLINE //
+initial cutscene:
+"We find ourselves in a place
+where the world is governed by shapes
+but a little cube with legs stands out...
+For it is to seek the legendary sword of death...
+And destroy every living thing there is...
+And so, the blob goes forth"
+>> Blob wakes up in the middle of nowhere
+>> Landscape is green, it is day
+>> blob continues to sword shrine
+>> Blob picks up sword (maybe with minigame?) and
+uses it to kill enemies
+>> blob continues to first boss
+>> Blob encounters a big evil triangle guardian
+big evil triangle dialogue:
+"what the heck?
+where did you get that sword?
+the sword of death?
+eh who gives a crap, you're not gonna use it for evil...
+right?
+>> blob goes closer
+why are you coming closer?
+you're not gonna kill me, are you?
+>> blob goes even closer
+ok thats it. you're dead
+>> first boss fight
+>> blob defeats big triangle
+triangle dialogue 2:
+"what have you done...?
+you won't make it alive, I swear
+if you see a big orange crystal, DONT-"
+>> guardian dies
+>> blob continues to find milk shop
+milk guy dialogue:
+"hey, fellow traveller!
+I noticed you got that big guardian
+Those triangles are evil, they have taken all of our money
+and most importantly, our milk!
+Do you have some to spare?
+I'll give you some helpful items in return..."
+>> blob leaves (whether or not he buys an item)
+milk guy dialogue 2:
+"Oh, and before you leave!
+I'm pretty sure that triangle has a key
+go pick it up! you might find some treasures!"
+>> blob picks up guardian key
+>> blob goes back to a locked place (maybe on lvl 5)
+>> blob unlocks it with the key
+>> blob enters dungeon
+CONTINUE STORYLINE HERE

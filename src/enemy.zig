@@ -75,13 +75,12 @@ pub const Enemy = struct {
         const player = main.player.data;
         if(player.pos.x - self.data.pos.x >= -self.detection_radius 
             and player.pos.x - self.data.pos.x < self.detection_radius 
-            and player.pos.y - self.data.pos.y >= -self.detection_radius 
-            and player.pos.y - self.data.pos.y < self.detection_radius 
+            and player.pos.y - self.data.pos.y >= -self.detection_radius / 3
+            and player.pos.y - self.data.pos.y < self.detection_radius / 3
             and !self.data.immunity_timer.active) return true;
         return false;
     }
     
-    // beelo partially approves, though i want to improve it more :)
     pub fn runAI(self: *Enemy) void {
         const player = main.player.data;
         self.direction_timer.update();
