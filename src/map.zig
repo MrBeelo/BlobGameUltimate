@@ -69,7 +69,7 @@ pub const Map = struct {
     pub fn draw(self: *Map) void {
         for(self.data) |*tile| {
             if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cam.camera.target.x - cam.camera.offset.x, .y = cam.camera.target.y - cam.camera.offset.y, .width = scr.sim_size.x, .height = scr.sim_size.y })) {
-                if((tile.type != .TRIGGER or (tile.type == .TRIGGER and main.f3)) and tile.should_draw) rl.drawTexturePro(test_tile_atlas.texture, tile.src_rect, tile.getSimDestRect(), .zero(), 0, .white);
+                if((tile.type != .TRIGGER or (tile.type == .TRIGGER and main.f3)) and tile.should_draw) rl.drawTexturePro(tile_atlas.texture, tile.src_rect, tile.getSimDestRect(), .zero(), 0, .white);
                 if(main.f3) for(self.objects) |*object| object.drawDebug();
             }
         }
@@ -77,7 +77,7 @@ pub const Map = struct {
 };
 
 pub var maps: []Map = undefined;
-var test_tile_atlas: TileAtlas = undefined;
+var tile_atlas: TileAtlas = undefined;
 
 pub fn loadMap(path: []const u8, id: usize) !Map {
     var file = try std.fs.cwd().openFile(path, .{});
@@ -133,7 +133,7 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
         
         if(tile_type != .AIR) {
             data[variable_index] = Tile{
-                .src_rect = .{ .x = @as(f32, @floatFromInt(@mod(texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .y = @as(f32, @floatFromInt(@divFloor(texture_number, test_tile_atlas.atlas_width))) * test_tile_atlas.atlas_tile_size, .width = test_tile_atlas.atlas_tile_size, .height = test_tile_atlas.atlas_tile_size },
+                .src_rect = .{ .x = @as(f32, @floatFromInt(@mod(texture_number, tile_atlas.atlas_width))) * tile_atlas.atlas_tile_size, .y = @as(f32, @floatFromInt(@divFloor(texture_number, tile_atlas.atlas_width))) * tile_atlas.atlas_tile_size, .width = tile_atlas.atlas_tile_size, .height = tile_atlas.atlas_tile_size },
                 .dest_rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size },
                 .type = tile_type,
                 .texture_number = texture_number,
@@ -170,7 +170,7 @@ pub fn loadMapEx(path: []const u8, player_spawn_pos: rl.Vector2, enemy_spawn_pos
 }
 
 pub fn loadTileAtlas() void {
-    test_tile_atlas = TileAtlas{
+    tile_atlas = TileAtlas{
         .texture = rl.loadTexture("res/sprite/map_atlas.png") catch crsh.crash(.RAYLIB_ERROR),
         .atlas_tile_size = 32,
         .atlas_width = 8
@@ -178,7 +178,7 @@ pub fn loadTileAtlas() void {
 }
 
 pub fn unloadTileAtlas() void {
-    rl.unloadTexture(test_tile_atlas.texture);
+    rl.unloadTexture(tile_atlas.texture);
 }
 
 pub fn initMaps() void {

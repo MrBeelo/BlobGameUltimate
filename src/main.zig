@@ -41,7 +41,7 @@ pub fn fullyTintTexture(texture: rl.Texture2D, color: rl.Color) rl.Texture2D {
 }
 
 pub fn updateGame() void {
-    bg.updateBackground(.BB1);
+    bg.updateBackground(.BBU1);
     map.maps[savefile.current_map].update();
     for(ene.enemies.items) |*enemy| enemy.update();
     player.update();
@@ -50,7 +50,7 @@ pub fn updateGame() void {
 }
 
 pub fn drawGame() void {
-    bg.drawBackground(.BB1);
+    bg.drawBackground(.BBU1);
     rl.beginMode2D(cam.camera);
     map.maps[savefile.current_map].draw();
     for(ene.enemies.items) |*enemy| enemy.draw();
