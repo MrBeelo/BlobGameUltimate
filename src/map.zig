@@ -99,7 +99,7 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
     const height = layers_val.get("height").?.integer;
     const map_size = rl.Vector2{ .x = @floatFromInt(width), .y = @floatFromInt(height) };
     
-    const tile_size = @as(f32, @floatFromInt(parsed_map.get("tilewidth").?.integer));
+    const tile_size = @as(f32, @floatFromInt(parsed_map.get("tilesize").?.integer));
     
     const data_array = layers_val.get("data").?.array;
     var shifted_data_array = std.array_list.Managed(i32).init(main.allocator);
@@ -122,10 +122,10 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
     var variable_index: usize = 0;
     for(shifted_data_array.items, 0..) |texture_number, index| {
         const tile_type: TileType = switch(texture_number) {
-            0...23 => .SOLID,
-            24...31 => .HAZARD,
-            32...39 => .CUSTOM,
-            40...47 => .TRIGGER,
+            0...(8*4-1) => .SOLID,
+            (8*4)...(8*5-1) => .HAZARD,
+            (8*5)...(8*6-1) => .CUSTOM,
+            (8*6)...(8*7-1) => .TRIGGER,
             else => .AIR
         };
         
@@ -146,11 +146,11 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
         const vert_spike_buffer: f32 = 15;
                 
         switch (texture_number) {
-            32 => objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }}) catch crsh.crash(.OUT_OF_MEMORY),
-            33 => { objects.append(.{ .obj_type = .MILK, .rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size } }) catch crsh.crash(.OUT_OF_MEMORY); milk_poses.append(variable_index) catch crsh.crash(.OUT_OF_MEMORY); },
-            40 => player_spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y },
-            41 => enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
-            42 => enemy_spawn_poses.append(.{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
+            40 => objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }}) catch crsh.crash(.OUT_OF_MEMORY),
+            41 => { objects.append(.{ .obj_type = .MILK, .rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size } }) catch crsh.crash(.OUT_OF_MEMORY); milk_poses.append(variable_index) catch crsh.crash(.OUT_OF_MEMORY); },
+            48 => player_spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y },
+            49 => enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
+            50 => enemy_spawn_poses.append(.{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
             else => {}
         }
     }
@@ -182,10 +182,10 @@ pub fn unloadTileAtlas() void {
 }
 
 pub fn initMaps() void {
-    maps = main.mutateSlice(Map, &[_]Map{
-        loadMap("res/data/test-map.json", 0) catch crsh.crash(.MAP_ERROR),
-        loadMap("res/data/test-map-2.json", 1) catch crsh.crash(.MAP_ERROR)
-    });
+    const map_amount = 2;
+    var map_list = std.array_list.Managed(Map).init(main.allocator);
+    for(0..map_amount) |index| map_list.append(loadMap(std.fmt.allocPrintSentinel(main.allocator, "res/data/{d}.json", .{index + 1}, 0) catch crsh.crash(.OUT_OF_MEMORY), index) catch crsh.crash(.MAP_ERROR )) catch crsh.crash(.OUT_OF_MEMORY);
+    maps = map_list.toOwnedSlice() catch crsh.crash(.OUT_OF_MEMORY);
 }
 
 pub fn moveToMap(map_number: usize) void {

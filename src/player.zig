@@ -57,7 +57,6 @@ pub const Player = struct {
     pub fn reset(self: *Player) void {
         self.data.pos = map.maps[main.savefile.current_map].player_spawn_pos;
         self.data.vel = .zero();
-        self.data.immunity_timer.activate();
         self.data.health = base_player_health;
         self.data.is_player = true;
     }
