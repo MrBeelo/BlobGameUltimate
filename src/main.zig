@@ -41,7 +41,6 @@ pub fn fullyTintTexture(texture: rl.Texture2D, color: rl.Color) rl.Texture2D {
 }
 
 pub fn updateGame() void {
-    bg.updateBackground(.BBU1);
     map.maps[savefile.current_map].update();
     for(ene.enemies.items) |*enemy| enemy.update();
     player.update();
@@ -50,7 +49,6 @@ pub fn updateGame() void {
 }
 
 pub fn drawGame() void {
-    bg.drawBackground(.BBU1);
     rl.beginMode2D(cam.camera);
     map.maps[savefile.current_map].draw();
     for(ene.enemies.items) |*enemy| enemy.draw();
@@ -102,11 +100,13 @@ pub fn main() void {
         if(inp.getPressKey(.F3)) f3 = !f3;
         scr.updateTargetScale();
         
+        bg.updateBackground(bg.getBackgroundType());
         if(game_state == .PLAYING) updateGame() else men.updateMenus();
         
         if(scr.target.texture.id != 0) rl.beginTextureMode(scr.target);
         rl.clearBackground(.white);
         
+        bg.drawBackground(bg.getBackgroundType());
         if(game_state == .PLAYING or game_state == .MAP_TRANSITION) {
             drawGame();
         } else if(game_state == .PAUSED) {

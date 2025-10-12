@@ -4,13 +4,52 @@ const main = @import("main.zig");
 const scr = @import("screen.zig");
 const ti = @import("timer.zig");
 const sta = @import("stars.zig");
+const crsh = @import("crash.zig");
 
 pub const BackgroundType = enum {
+    MM,
     BB1,
     BB2,
     BBU1,
     BBU2,
-    BBU3
+    BBU3,
+    BBUF
+};
+
+var mm_blob_strip: rl.Texture2D = undefined;
+var mm_blob_strip_timer: ti.Timer = .{ .auto_start = true, .duration = 1, .repeat = true };
+
+const MMBlobStrip = struct {
+    index: usize = 0,
+    y_offset: f32 = 0,
+    
+    pub fn update(self: *MMBlobStrip) void {
+        const timer_state = (@as(f32, @floatCast(rl.getTime())) - mm_blob_strip_timer.start_time) / mm_blob_strip_timer.duration;
+        const offsetted_timer_state = timer_state + @as(f32, @floatFromInt(self.index)) / 10;
+        self.y_offset = @sin(offsetted_timer_state * 2 * std.math.pi);
+    }
+    
+    pub fn draw(self: *MMBlobStrip) void {
+        rl.drawTexturePro(mm_blob_strip, .{ .x = 0, .y = 0, .width = 64, .height = 1024 }, .{ .x = 128 * @as(f32, @floatFromInt(self.index)), .y = -self.y_offset * 32 - 64, .width = 128, .height = 2048 }, .{ .x = 0, .y = 0 }, 0, .white);
+    }
+};
+
+pub fn newStripArray(len: usize) [len]MMBlobStrip {
+    const def_strip = MMBlobStrip{};
+    var strip_array: [len]MMBlobStrip = [_]MMBlobStrip{def_strip} ** len;
+    for(0..(len-1)) |index| strip_array[index].index = index;
+    return strip_array;
+}
+
+pub const MMParams = struct {
+    strips: [16]MMBlobStrip = newStripArray(16),
+    pub fn update(self: *MMParams) void {
+        for(&self.strips) |*strip| strip.update();
+    }
+    
+    pub fn draw(self: *MMParams) void {
+        for(&self.strips) |*strip| strip.draw();
+    }
 };
 
 pub const BBU1Params = struct {
@@ -109,10 +148,12 @@ pub const BBU1Params = struct {
     }
 };
 
+var mm = MMParams{};
 var bbu1 = BBU1Params{};
 
 pub fn updateBackground(bg_type: BackgroundType) void {
     switch (bg_type) {
+        .MM => mm.update(),
         .BBU1 => bbu1.update(),
         else => {}
     }
@@ -120,15 +161,31 @@ pub fn updateBackground(bg_type: BackgroundType) void {
 
 pub fn drawBackground(bg_type: BackgroundType) void {
     switch (bg_type) {
+        .MM => mm.draw(),
         .BBU1 => bbu1.draw(),
         else => {}
     }
 }
 
+pub fn getBackgroundType() BackgroundType {
+    if(main.game_state != .PLAYING and main.game_state != .MAP_TRANSITION and main.game_state != .PAUSED) {
+        return .MM;
+    } else switch (main.savefile.current_map) {
+        0...10 => return .BBU1,
+        11...20 => return .BBU2,
+        21...30 => return .BBU3,
+        31,32,35,36,39,40 => return .BB1,
+        33,34,37,38 => return .BB2,
+        41...50 => return .BBUF,
+        else => return .MM
+    }
+}
+
 pub fn loadBackgrounds() void {
+    mm_blob_strip = rl.loadTexture("res/sprite/blob_strip.png") catch crsh.crash(.RAYLIB_ERROR);
     bbu1.sun_moon_timer.init();
 }
 
 pub fn unloadBackgrounds() void {
-    
+    rl.unloadTexture(mm_blob_strip);
 }

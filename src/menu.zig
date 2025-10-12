@@ -62,7 +62,7 @@ pub const Button = struct {
     }
     
     pub fn update(self: *Button) void {
-        self.color = if(self.selected) .gold else .black;
+        self.color = if(self.selected) .gold else .white;
     }
     
     pub fn draw(self: *Button) void {
@@ -78,7 +78,7 @@ pub const Menu = struct {
     selected_button_index: i32 = 0,
     top_text: [:0]const u8 = "TOP TEXT PLACEHOLDER",
     top_text_font_size: f32 = 64,
-    top_text_color: rl.Color = .black,
+    top_text_color: rl.Color = .white,
     
     pub fn update(self: *Menu) void {
         if(!self.is_gameplay_menu and !self.is_map_transition_menu) {
