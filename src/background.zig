@@ -26,7 +26,7 @@ const MMBlobStrip = struct {
     pub fn update(self: *MMBlobStrip) void {
         const timer_state = (@as(f32, @floatCast(rl.getTime())) - mm_blob_strip_timer.start_time) / mm_blob_strip_timer.duration;
         const offsetted_timer_state = timer_state + @as(f32, @floatFromInt(self.index)) / 10;
-        self.y_offset = @sin(offsetted_timer_state * 2 * std.math.pi);
+        self.y_offset = @sin(offsetted_timer_state * std.math.pi);
     }
     
     pub fn draw(self: *MMBlobStrip) void {

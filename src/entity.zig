@@ -25,7 +25,8 @@ pub const DefaultAnimState = enum {
     WALK1,
     WALK2,
     JUMP1,
-    JUMP2
+    JUMP2,
+    DEAD1
 };
 
 pub const EntityData = struct {
@@ -63,7 +64,6 @@ pub const EntityData = struct {
         if(self.is_being_knocked) {
             if((self.is_player and self.vel.y >= 0) or (!self.is_player and self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)])) self.is_being_knocked = false;
         }
-        //if(self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)] and self.is_being_knocked) self.is_being_knocked = false;
     }
     
     pub fn moveLeft(self: *EntityData) void {

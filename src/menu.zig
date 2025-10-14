@@ -13,7 +13,6 @@ pub const GameState = enum {
     MAP_TRANSITION,
     MAIN,
     PAUSED,
-    DIED,
     EXIT
 };
 
@@ -109,7 +108,8 @@ pub const Menu = struct {
                 
                 if(!map_transition_map_changed) {
                     map_transition_map_changed = true;
-                    map.moveToMap(main.savefile.current_map + 1);
+                    map.moveToMap(if(main.player.data.health <= 0) main.savefile.current_map else main.savefile.current_map + 1);
+                    main.player.data.anim_state = .IDLE1;
                 }
             } else {
                 map_transition_color = rl.colorLerp(.white, .black, (@as(f32, @floatCast(rl.getTime())) - map_transition_timer.start_time) * 2 / map_transition_timer.duration);
@@ -165,16 +165,6 @@ pub fn initMenus() void {
                 createDefaultButton("BACK TO MAIN MENU", .{ .change_game_state = .MAIN }, 1)
             }), 
             .top_text = "PAUSED"
-        },
-        
-        // DIED
-        Menu{ 
-            .buttons = main.mutateSlice(Button, &[_]Button{
-                createDefaultButton("TRY AGAIN", .{ .reset_player = true }, 0),
-                createDefaultButton("BACK TO MAIN MENU", .{ .change_game_state = .MAIN }, 1)
-            }), 
-            .top_text = "YOU DIED",
-            .top_text_color = .red
         },
         
         // EXIT

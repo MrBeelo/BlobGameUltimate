@@ -120,6 +120,7 @@ pub fn main() void {
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Current Map: {d}", .{savefile.current_map}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 120 }, .black);
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Milk: {d}", .{savefile.milk}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 160 }, .black);
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Position: [{d:.1}, {d:.1}]", .{player.data.pos.x, player.data.pos.y}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 200 }, .black);
+        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Game State: {}", .{game_state}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 240 }, .black);
         
         rl.endTextureMode();
         

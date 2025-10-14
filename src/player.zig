@@ -33,7 +33,10 @@ pub const Player = struct {
         self.data.update();
         self.data.updateAnimations(&self.animation_timer);
         
-        if(self.data.health <= 0) men.changeGameState(.DIED);
+        if(self.data.health <= 0) {
+            self.data.anim_state = .DEAD1;
+            map.resetAndStayAtMap();
+        }
         
         self.sword.update();
     }

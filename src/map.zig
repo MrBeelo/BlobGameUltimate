@@ -142,7 +142,7 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
             variable_index += 1;
         }
         
-        const horiz_spike_buffer: f32 = 7;
+        const horiz_spike_buffer: f32 = 10;
         const vert_spike_buffer: f32 = 15;
                 
         switch (texture_number) {
@@ -189,11 +189,15 @@ pub fn initMaps() void {
 }
 
 pub fn moveToMap(map_number: usize) void {
-    if(map_number < maps.len) {
-        main.savefile.current_map = map_number;
-        maps[main.savefile.current_map].reset();
-        sav.saveSaveFile(&main.savefile) catch crsh.crash(.SAVE_ERROR);
-    }
+    if(map_number < maps.len) main.savefile.current_map = map_number;
+    maps[main.savefile.current_map].reset();
+    sav.saveSaveFile(&main.savefile) catch crsh.crash(.SAVE_ERROR);
+}
+
+pub fn resetAndStayAtMap() void {
+    men.changeGameState(.MAP_TRANSITION);
+    men.map_transition_timer.activate();
+    men.map_transition_map_changed = false;
 }
 
 pub fn advanceMap() void {
