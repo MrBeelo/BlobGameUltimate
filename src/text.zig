@@ -5,6 +5,7 @@ const crsh = @import("crash.zig");
 
 var elevatia: rl.Font = undefined;
 var elevatia_italic: rl.Font = undefined;
+const elevatia_spacing: f32 = 2;
 
 pub const FontName = enum {
     ELEVATIA
@@ -36,10 +37,10 @@ pub fn unloadFonts() void {
 
 pub fn drawCustomText(text: [:0]const u8, font_name: FontName, font_type: FontType, font_size: f32, pos: rl.Vector2, color: rl.Color) void {
     const font = getFont(font_name, font_type);
-    rl.drawTextEx(font, text, pos, font_size, 0, color);
+    rl.drawTextEx(font, text, pos, font_size, elevatia_spacing, color);
 }
 
 pub fn measureCustomText(text: [:0]const u8, font_name: FontName, font_type: FontType, font_size: f32) rl.Vector2 {
     const font = getFont(font_name, font_type);
-    return rl.measureTextEx(font, text, font_size, 0);
+    return rl.measureTextEx(font, text, font_size, elevatia_spacing);
 }

@@ -32,7 +32,7 @@ pub fn changeGameState(game_state: GameState) void {
 }
 
 pub const Button = struct {
-    pos: rl.Vector2,
+    index: usize,
     font_size: f32 = 32,
     button_type: ButtonType = .{ .exit = true },
     text: [:0]const u8 = "BUTTON NAME PLACEHOLDER",
@@ -50,14 +50,11 @@ pub const Button = struct {
         }
     }
     
-    pub fn getSize(self: *Button) rl.Vector2 {
-        const button_width = txt.measureCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size).x + scr.ui_buffer * 2;
-        const button_height = self.font_size + scr.ui_buffer * 2;
-        return rl.Vector2{ .x = button_width, .y = button_height };
-    }
-    
     pub fn getRect(self: *Button) rl.Rectangle {
-        return rl.Rectangle{ .x = self.pos.x, .y = self.pos.y, .width = self.getSize().x, .height = self.getSize().y };
+        const y_pos: f32 = 400 + @as(f32, @floatFromInt(self.index)) * 110;
+        const width: f32 = scr.sim_size.x / 3;
+        const height: f32 = 80;
+        return rl.Rectangle{ .x = 0, .y = y_pos, .width = width, .height = height };
     }
     
     pub fn update(self: *Button) void {
@@ -65,8 +62,19 @@ pub const Button = struct {
     }
     
     pub fn draw(self: *Button) void {
-        rl.drawRectangleLinesEx(self.getRect(), 3, self.color);
-        txt.drawCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size, .{ .x = self.getRect().x + scr.ui_buffer, .y = self.getRect().y + scr.ui_buffer }, self.color);
+        const up_left_point: rl.Vector2 = .{ .x = self.getRect().x, .y = self.getRect().y };
+        const up_right_point: rl.Vector2 = .{ .x = self.getRect().x + self.getRect().width, .y = self.getRect().y };
+        const bottom_left_point: rl.Vector2 = .{ .x = self.getRect().x, .y = self.getRect().y + self.getRect().height };
+        const bottom_right_point: rl.Vector2 = .{ .x = self.getRect().x + self.getRect().width * 15 / 16, .y = self.getRect().y + self.getRect().height };
+        const thickness: f32 = 5;
+        
+        rl.drawLineEx(up_left_point, up_right_point, thickness, self.color);
+        rl.drawLineEx(bottom_left_point, bottom_right_point, thickness, self.color);
+        //rl.drawLineEx(up_left_point, bottom_left_point, thickness, self.color);
+        rl.drawLineEx(up_right_point, bottom_right_point, thickness, self.color);
+            
+        const measured_text = txt.measureCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size);
+        txt.drawCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size, .{ .x = self.getRect().x + self.getRect().width - measured_text.x - self.getRect().width / 16, .y = self.getRect().y + scr.ui_buffer }, self.color);
     }
 };
 
@@ -126,19 +134,8 @@ pub const Menu = struct {
 
 var menus: [@typeInfo(GameState).@"enum".fields.len]Menu = undefined;
 
-fn createButton(text: [:0]const u8, font_size: f32, button_type: ButtonType, y_pos: f32) Button {
-    var button = Button{ .button_type = button_type, .text = text, .font_size = font_size, .pos = .zero() };
-    button.pos = .{ .x = scr.sim_size.x / 2 - button.getSize().x / 2, .y = y_pos };
-    return button;
-}
-
-fn getDefaultButtonYPos(button_index: i32) f32 {
-    return 160 + 70 * @as(f32, @floatFromInt(button_index)); 
-}
-
-fn createDefaultButton(text: [:0]const u8, button_type: ButtonType, button_index: i32) Button {
-    const default_button_font_size: f32 = 40; 
-    return createButton(text, default_button_font_size, button_type, getDefaultButtonYPos(button_index));
+fn createButton(text: [:0]const u8, button_type: ButtonType, index: usize) Button {
+    return Button{ .button_type = button_type, .text = text, .font_size = 64, .index = index };
 }
 
 pub fn initMenus() void {
@@ -152,8 +149,8 @@ pub fn initMenus() void {
         // MAIN
         Menu{ 
             .buttons = main.mutateSlice(Button, &[_]Button{
-                createDefaultButton("PLAY", .{ .reset_player = true }, 0),
-                createDefaultButton("EXIT", .{ .change_game_state = .EXIT }, 1)
+                createButton("PLAY", .{ .reset_player = true }, 0),
+                createButton("EXIT", .{ .change_game_state = .EXIT }, 1)
             }), 
             .top_text = "BLOB GAME: ULTIMATE"
         },
@@ -161,8 +158,8 @@ pub fn initMenus() void {
         // PAUSED
         Menu{ 
             .buttons = main.mutateSlice(Button, &[_]Button{
-                createDefaultButton("CONTINUE", .{ .change_game_state = .PLAYING }, 0),
-                createDefaultButton("BACK TO MAIN MENU", .{ .change_game_state = .MAIN }, 1)
+                createButton("CONTINUE", .{ .change_game_state = .PLAYING }, 0),
+                createButton("BACK TO MAIN MENU", .{ .change_game_state = .MAIN }, 1)
             }), 
             .top_text = "PAUSED"
         },
@@ -170,8 +167,8 @@ pub fn initMenus() void {
         // EXIT
         Menu{ 
             .buttons = main.mutateSlice(Button, &[_]Button{
-                createDefaultButton("YES :)", .{ .exit = true }, 0),
-                createDefaultButton("NO :(", .{ .change_game_state = .MAIN }, 1)
+                createButton("YES :)", .{ .exit = true }, 0),
+                createButton("NO :(", .{ .change_game_state = .MAIN }, 1)
             }), 
             .top_text = "EXIT THE GAME?"
         }
