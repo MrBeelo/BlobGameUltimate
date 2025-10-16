@@ -38,6 +38,7 @@ pub const Button = struct {
     text: [:0]const u8 = "BUTTON NAME PLACEHOLDER",
     selected: bool = false,
     color: rl.Color = .black,
+    selection_placement_modifier: f32 = 0,
     
     pub fn click(self: *Button) void {
         switch (self.button_type) {
@@ -58,23 +59,28 @@ pub const Button = struct {
     }
     
     pub fn update(self: *Button) void {
-        self.color = if(self.selected) .gold else .white;
+        self.color = if(self.selected) .blue else .sky_blue;
+        
+        if(self.selected and self.selection_placement_modifier < 100) self.selection_placement_modifier += main.dt * 30; 
+        if(!self.selected and self.selection_placement_modifier > 0) self.selection_placement_modifier -= main.dt * 30; 
     }
     
     pub fn draw(self: *Button) void {
         const up_left_point: rl.Vector2 = .{ .x = self.getRect().x, .y = self.getRect().y };
-        const up_right_point: rl.Vector2 = .{ .x = self.getRect().x + self.getRect().width, .y = self.getRect().y };
+        const up_right_point: rl.Vector2 = .{ .x = self.getRect().x + self.getRect().width + self.selection_placement_modifier, .y = self.getRect().y };
         const bottom_left_point: rl.Vector2 = .{ .x = self.getRect().x, .y = self.getRect().y + self.getRect().height };
-        const bottom_right_point: rl.Vector2 = .{ .x = self.getRect().x + self.getRect().width * 15 / 16, .y = self.getRect().y + self.getRect().height };
-        const thickness: f32 = 5;
+        const bottom_right_point: rl.Vector2 = .{ .x = self.getRect().x + self.getRect().width * 15 / 16 + self.selection_placement_modifier, .y = self.getRect().y + self.getRect().height };
+        const thickness: f32 = 8;
+        const button_infill_color: rl.Color = .{ .r = 255, .g = 255, .b = 237, .a = 255 };
         
-        rl.drawLineEx(up_left_point, up_right_point, thickness, self.color);
-        rl.drawLineEx(bottom_left_point, bottom_right_point, thickness, self.color);
-        //rl.drawLineEx(up_left_point, bottom_left_point, thickness, self.color);
+        rl.drawLineEx(up_left_point, .{ .x = up_right_point.x + 3, .y = up_right_point.y }, thickness, self.color);
+        rl.drawLineEx(bottom_left_point, .{ .x = bottom_right_point.x + 3, .y = bottom_right_point.y }, thickness, self.color);
         rl.drawLineEx(up_right_point, bottom_right_point, thickness, self.color);
+        rl.drawTriangle(bottom_left_point, up_right_point, up_left_point, button_infill_color);
+        rl.drawTriangle(bottom_right_point, up_right_point, bottom_left_point, button_infill_color);
             
         const measured_text = txt.measureCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size);
-        txt.drawCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size, .{ .x = self.getRect().x + self.getRect().width - measured_text.x - self.getRect().width / 16, .y = self.getRect().y + scr.ui_buffer }, self.color);
+        txt.drawCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size, .{ .x = self.getRect().x + self.getRect().width - measured_text.x - self.getRect().width / 16 + self.selection_placement_modifier, .y = self.getRect().y + scr.ui_buffer }, self.color);
     }
 };
 

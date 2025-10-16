@@ -30,7 +30,7 @@ const MMBlobStrip = struct {
     }
     
     pub fn draw(self: *MMBlobStrip) void {
-        rl.drawTexturePro(mm_blob_strip, .{ .x = 0, .y = 0, .width = 64, .height = 1024 }, .{ .x = 128 * @as(f32, @floatFromInt(self.index)), .y = -self.y_offset * 32 - 64, .width = 128, .height = 2048 }, .{ .x = 0, .y = 0 }, 0, .dark_gray);
+        rl.drawTexturePro(mm_blob_strip, .{ .x = 0, .y = 0, .width = 64, .height = 1024 }, .{ .x = 128 * @as(f32, @floatFromInt(self.index)), .y = -self.y_offset * 32 - 64, .width = 128, .height = 2048 }, .{ .x = 0, .y = 0 }, 0, .{ .r = 50, .g = 50, .b = 50, .a = 255 });
     }
 };
 
