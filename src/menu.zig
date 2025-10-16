@@ -7,6 +7,7 @@ const main = @import("main.zig");
 const txt = @import("text.zig");
 const map = @import("map.zig");
 const ti = @import("timer.zig");
+const bg = @import("background.zig");
 
 pub const GameState = enum {
     PLAYING,
@@ -19,6 +20,7 @@ pub const GameState = enum {
 pub var map_transition_timer = ti.Timer{ .duration = 1 };
 pub var map_transition_map_changed = false;
 pub var map_transition_color: rl.Color = .white;
+var blob_logo: rl.Texture2D = undefined;
 
 pub const ButtonType = union(enum) {
     change_game_state: GameState,
@@ -27,6 +29,7 @@ pub const ButtonType = union(enum) {
 };
 
 pub fn changeGameState(game_state: GameState) void {
+    if(game_state == .MAIN and main.game_state == .PAUSED) bg.splash_text_index = rl.getRandomValue(0, 9);
     main.game_state = game_state;
     menus[@intFromEnum(game_state)].selected_button_index = 0;
 }
@@ -92,6 +95,8 @@ pub const Menu = struct {
     top_text: [:0]const u8 = "TOP TEXT PLACEHOLDER",
     top_text_font_size: f32 = 64,
     top_text_color: rl.Color = .white,
+    should_draw_texture: bool = false,
+    texture: rl.Texture2D = undefined,
     
     pub fn update(self: *Menu) void {
         if(!self.is_gameplay_menu and !self.is_map_transition_menu) {
@@ -133,8 +138,12 @@ pub const Menu = struct {
     
     pub fn draw(self: *Menu) void {
         for(self.buttons) |*button| button.draw();
-        //maybe make a custom logo for main menu?
-        txt.drawCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size, .{ .x = scr.sim_size.x / 2 - txt.measureCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size).x / 2, .y = 50 }, self.top_text_color);
+        if(!self.should_draw_texture) {
+            txt.drawCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size, .{ .x = scr.sim_size.x / 2 - txt.measureCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size).x / 2, .y = 50 }, self.top_text_color);
+        } else {
+            rl.drawTexture(self.texture, @intFromFloat(scr.sim_size.x / 2 - @as(f32, @floatFromInt(self.texture.width)) / 2), 0, .white);
+            //rl.drawTextureEx(self.texture, .{ .x = scr.sim_size.x / 2 - @as(f32, @floatFromInt(self.texture.width)) / 2, .y = 50 }, 0, 0, .white);
+        }
     }
 };
 
@@ -158,7 +167,8 @@ pub fn initMenus() void {
                 createButton("PLAY", .{ .reset_player = true }, 0),
                 createButton("EXIT", .{ .change_game_state = .EXIT }, 1)
             }), 
-            .top_text = "BLOB GAME: ULTIMATE"
+            .should_draw_texture = true,
+            .texture = blob_logo
         },
         
         // PAUSED
@@ -179,6 +189,14 @@ pub fn initMenus() void {
             .top_text = "EXIT THE GAME?"
         }
     };
+}
+
+pub fn loadMenus() void {
+    blob_logo = rl.loadTexture("res/sprite/blob_logo.png") catch crsh.crash(.RAYLIB_ERROR);
+}
+
+pub fn unloadMenus() void {
+    rl.unloadTexture(blob_logo);
 }
 
 pub fn updateMenus() void {

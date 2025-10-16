@@ -81,7 +81,10 @@ pub fn main() void {
     cam.initCamera();
     scr.initTarget();
     
+    men.loadMenus();
+    defer men.unloadMenus();
     men.initMenus();
+    
     map.initMaps();
     
     sw.loadSword();
