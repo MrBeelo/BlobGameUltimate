@@ -55,9 +55,15 @@ pub fn drawIntro() void {
         else => 255
     };
     const text_color = rl.Color{ .r = 0, .g = 0, .b = 0, .a = text_color_alpha};
+    const image_color_rgb: u8 = switch (@as(i32, @intFromFloat(timer_state * 100))) {
+        0...9 => @intFromFloat((timer_state - 0) * 10 * 255),
+        90...99 => @intFromFloat(255 - (timer_state - 0.9) * 10 * 255),
+        else => 255
+    };
+    const image_color = rl.Color{ .r = image_color_rgb, .g = image_color_rgb, .b = image_color_rgb, .a = 255};
     switch (current_phase) {
         1 => {
-            rl.drawTexture(cutscene_image_1, 0, 0, .white);
+            rl.drawTexture(cutscene_image_1, 0, 0, image_color);
             if(timer_state <= 0.5) {
                 txt.drawCustomText("We find ourselves in a place", .DANCING_SCRIPT, .ITALIC, 70, .{ .x = 200 + timer_state * 30, .y = 400 }, text_color);
             } else {
@@ -65,19 +71,19 @@ pub fn drawIntro() void {
             }
         },
         2 => {
-            rl.drawTexture(cutscene_image_2, 0, 0, .white);
+            rl.drawTexture(cutscene_image_2, 0, 0, image_color);
             if(timer_state <= 0.5) {
-                txt.drawCustomText("but a little cube with legs stands out...", .DANCING_SCRIPT, .ITALIC, 70, .{ .x = 200 + timer_state * 30, .y = 400 }, text_color);
+                txt.drawCustomText("but a little cube with legs stands out...", .DANCING_SCRIPT, .ITALIC, 70, .{ .x = 800 - timer_state * 30, .y = 400 }, text_color);
             } else {
-                txt.drawCustomText("For it is to seek the legendary sword of death...", .DANCING_SCRIPT, .ITALIC, 70, .{ .x = 500 + timer_state * 30, .y = 700 }, text_color);
+                txt.drawCustomText("For it is to seek the legendary sword of death...", .DANCING_SCRIPT, .ITALIC, 70, .{ .x = 500 - timer_state * 30, .y = 700 }, text_color);
             }
         },
         3 => {
-            rl.drawTexture(cutscene_image_3, 0, 0, .white);
+            rl.drawTexture(cutscene_image_3, 0, 0, image_color);
             if(timer_state <= 0.5) {
-                txt.drawCustomText("And destroy every living thing there is...", .DANCING_SCRIPT, .ITALIC, 70, .{ .x = 200 + timer_state * 30, .y = 400 }, text_color);
+                txt.drawCustomText("And destroy every living thing there is...", .DANCING_SCRIPT, .ITALIC, 70, .{ .x = 400 + timer_state * 30, .y = 400 }, text_color);
             } else {
-                txt.drawCustomText("And so, the blob goes forth", .DANCING_SCRIPT, .ITALIC, 70, .{ .x = 500 + timer_state * 30, .y = 700 }, text_color);
+                txt.drawCustomText("And so, the blob goes forth", .DANCING_SCRIPT, .ITALIC, 120, .{ .x = 400, .y = 450 }, text_color);
             }
         },
         else => {}
