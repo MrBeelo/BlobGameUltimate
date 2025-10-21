@@ -25,10 +25,7 @@ pub const Player = struct {
         if(inp.getHoldKey(.LEFT)) self.data.moveLeft() else if(inp.getHoldKey(.RIGHT)) self.data.moveRight() else if(!self.data.is_being_knocked) self.data.vel.x = 0;
         if(inp.getPressKey(.ATTACK)) self.sword.use();
         if(inp.getPressKey(.JUMP)) self.data.jump();
-        if(inp.getPressKey(.JUMP) and self.data.can_walljump) {
-            self.data.jumpMidAir(7);
-            if(self.data.last_direction_right) self.data.knockBack(false, 3) else self.data.knockBack(true, 3);
-        }
+        if(inp.getPressKey(.JUMP) and self.data.can_walljump) self.data.jumpMidAir(7);
         
         self.data.update();
         self.data.updateAnimations(&self.animation_timer);

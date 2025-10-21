@@ -8,13 +8,15 @@ const txt = @import("text.zig");
 const map = @import("map.zig");
 const ti = @import("timer.zig");
 const bg = @import("background.zig");
+const int = @import("intro.zig");
 
 pub const GameState = enum {
     PLAYING,
     MAP_TRANSITION,
     MAIN,
     PAUSED,
-    EXIT
+    EXIT,
+    INTRO
 };
 
 pub var map_transition_timer = ti.Timer{ .duration = 1 };
@@ -29,6 +31,12 @@ pub const ButtonType = union(enum) {
 };
 
 pub fn changeGameState(game_state: GameState) void {
+    if(game_state == .PLAYING and !main.savefile.played_intro) {
+        main.game_state = .INTRO;
+        int.playIntro();
+        return;
+    }
+    
     if(game_state == .MAIN and main.game_state == .PAUSED) bg.splash_text_index = rl.getRandomValue(0, 9);
     main.game_state = game_state;
     menus[@intFromEnum(game_state)].selected_button_index = 0;
@@ -62,7 +70,7 @@ pub const Button = struct {
     }
     
     pub fn update(self: *Button) void {
-        self.color = if(self.selected) .blue else rl.Color{ .r = 50, .g = 50, .b = 50, .a = 255 };
+        self.color = if(self.selected) .white else rl.Color{ .r = 50, .g = 50, .b = 50, .a = 255 };
         
         if(self.selected and self.selection_placement_modifier < 100) self.selection_placement_modifier += main.dt * 30; 
         if(!self.selected and self.selection_placement_modifier > 0) self.selection_placement_modifier -= main.dt * 30; 
@@ -74,13 +82,10 @@ pub const Button = struct {
         const bottom_left_point: rl.Vector2 = .{ .x = self.getRect().x, .y = self.getRect().y + self.getRect().height };
         const bottom_right_point: rl.Vector2 = .{ .x = self.getRect().x + self.getRect().width * 15 / 16 + self.selection_placement_modifier, .y = self.getRect().y + self.getRect().height };
         const thickness: f32 = 8;
-        //const button_infill_color: rl.Color = .{ .r = 178, .g = 198, .b = 207, .a = 255 };
         
         rl.drawLineEx(up_left_point, .{ .x = up_right_point.x + 3, .y = up_right_point.y }, thickness, self.color);
         rl.drawLineEx(bottom_left_point, .{ .x = bottom_right_point.x + 3, .y = bottom_right_point.y }, thickness, self.color);
         rl.drawLineEx(up_right_point, bottom_right_point, thickness, self.color);
-        //rl.drawTriangle(bottom_left_point, up_right_point, up_left_point, button_infill_color);
-        //rl.drawTriangle(bottom_right_point, up_right_point, bottom_left_point, button_infill_color);
             
         const measured_text = txt.measureCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size);
         txt.drawCustomText(self.text, .ELEVATIA, .NORMAL, self.font_size, .{ .x = self.getRect().x + self.getRect().width - measured_text.x - self.getRect().width / 16 + self.selection_placement_modifier, .y = self.getRect().y + scr.ui_buffer }, self.color);
@@ -91,6 +96,7 @@ pub const Menu = struct {
     buttons: []Button,
     is_gameplay_menu: bool = false,
     is_map_transition_menu: bool = false,
+    is_intro_menu: bool = false,
     selected_button_index: i32 = 0,
     top_text: [:0]const u8 = "TOP TEXT PLACEHOLDER",
     top_text_font_size: f32 = 64,
@@ -99,7 +105,23 @@ pub const Menu = struct {
     texture: rl.Texture2D = undefined,
     
     pub fn update(self: *Menu) void {
-        if(!self.is_gameplay_menu and !self.is_map_transition_menu) {
+        if(self.is_map_transition_menu) {
+            map_transition_timer.update();
+            if(map_transition_timer.called) changeGameState(.PLAYING);
+            if(@as(f32, @floatCast(rl.getTime())) - map_transition_timer.start_time >= map_transition_timer.duration / 2) {
+                map_transition_color = rl.colorLerp(.black, .white, (@as(f32, @floatCast(rl.getTime())) - map_transition_timer.start_time - map_transition_timer.duration / 2) * 2 / map_transition_timer.duration);
+                
+                if(!map_transition_map_changed) {
+                    map_transition_map_changed = true;
+                    map.moveToMap(if(main.player.data.health <= 0) main.savefile.current_map else main.savefile.current_map + 1);
+                    main.player.data.anim_state = .IDLE1;
+                }
+            } else {
+                map_transition_color = rl.colorLerp(.white, .black, (@as(f32, @floatCast(rl.getTime())) - map_transition_timer.start_time) * 2 / map_transition_timer.duration);
+            }
+        } else if(self.is_intro_menu) {
+            int.updateIntro();
+        } else if(!self.is_gameplay_menu) {
             if(inp.getPressKey(.UP)) self.selected_button_index -= 1;
             if(inp.getPressKey(.DOWN)) self.selected_button_index += 1;
             
@@ -119,26 +141,14 @@ pub const Menu = struct {
                     }
                 }
             }
-        } else if(self.is_map_transition_menu) {
-            map_transition_timer.update();
-            if(map_transition_timer.called) changeGameState(.PLAYING);
-            if(@as(f32, @floatCast(rl.getTime())) - map_transition_timer.start_time >= map_transition_timer.duration / 2) {
-                map_transition_color = rl.colorLerp(.black, .white, (@as(f32, @floatCast(rl.getTime())) - map_transition_timer.start_time - map_transition_timer.duration / 2) * 2 / map_transition_timer.duration);
-                
-                if(!map_transition_map_changed) {
-                    map_transition_map_changed = true;
-                    map.moveToMap(if(main.player.data.health <= 0) main.savefile.current_map else main.savefile.current_map + 1);
-                    main.player.data.anim_state = .IDLE1;
-                }
-            } else {
-                map_transition_color = rl.colorLerp(.white, .black, (@as(f32, @floatCast(rl.getTime())) - map_transition_timer.start_time) * 2 / map_transition_timer.duration);
-            }
         }
     }
     
     pub fn draw(self: *Menu) void {
         for(self.buttons) |*button| button.draw();
-        if(!self.should_draw_texture) {
+        if(self.is_intro_menu) {
+            int.drawIntro();
+        } else if(!self.should_draw_texture) {
             txt.drawCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size, .{ .x = scr.sim_size.x / 2 - txt.measureCustomText(self.top_text, .ELEVATIA, .NORMAL, self.top_text_font_size).x / 2, .y = 50 }, self.top_text_color);
         } else {
             rl.drawTexture(self.texture, @intFromFloat(scr.sim_size.x / 2 - @as(f32, @floatFromInt(self.texture.width)) / 2), 0, .white);
@@ -186,7 +196,10 @@ pub fn initMenus() void {
                 createButton("NO :)", .{ .change_game_state = .MAIN }, 1)
             }), 
             .top_text = "EXIT THE GAME?"
-        }
+        },
+        
+        // INTRO
+        Menu{ .buttons = main.mutateSlice(Button, &[_]Button{}), .is_intro_menu = true },
     };
 }
 
