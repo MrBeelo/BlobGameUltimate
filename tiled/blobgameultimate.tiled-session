@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "test-tileset.tsx",
     "expandedProjectPaths": [
         "."
     ],
@@ -27,7 +27,7 @@
     "map.height": 34,
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
-    "map.width": 60,
+    "map.width": 65,
     "openFiles": [
         "test-tileset.tsx"
     ],

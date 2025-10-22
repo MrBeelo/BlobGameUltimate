@@ -99,7 +99,7 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
     const height = layers_val.get("height").?.integer;
     const map_size = rl.Vector2{ .x = @floatFromInt(width), .y = @floatFromInt(height) };
     
-    const tile_size = @as(f32, @floatFromInt(parsed_map.get("tilesize").?.integer));
+    const tile_size: f32 = 32;
     
     const data_array = layers_val.get("data").?.array;
     var shifted_data_array = std.array_list.Managed(i32).init(main.allocator);
@@ -182,7 +182,7 @@ pub fn unloadTileAtlas() void {
 }
 
 pub fn initMaps() void {
-    const map_amount = 2;
+    const map_amount = 3;
     var map_list = std.array_list.Managed(Map).init(main.allocator);
     for(0..map_amount) |index| map_list.append(loadMap(std.fmt.allocPrintSentinel(main.allocator, "res/data/{d}.json", .{index + 1}, 0) catch crsh.crash(.OUT_OF_MEMORY), index) catch crsh.crash(.MAP_ERROR )) catch crsh.crash(.OUT_OF_MEMORY);
     maps = map_list.toOwnedSlice() catch crsh.crash(.OUT_OF_MEMORY);

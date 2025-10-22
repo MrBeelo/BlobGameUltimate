@@ -74,6 +74,8 @@ pub const Button = struct {
         
         if(self.selected and self.selection_placement_modifier < 100) self.selection_placement_modifier += main.dt * 30; 
         if(!self.selected and self.selection_placement_modifier > 0) self.selection_placement_modifier -= main.dt * 30; 
+        
+        self.selection_placement_modifier = std.math.clamp(self.selection_placement_modifier, 0, 100);
     }
     
     pub fn draw(self: *Button) void {
