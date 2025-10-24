@@ -9,7 +9,6 @@ Redo main menu logo (make it white) because it looks like shit
 A new art style, along with the old 2 ones
 A total of 5 bosses, 3 attacks each, with final boss being either giant cube or beelo
 50 levels 0_0 (way easier tho)
-Backgrounds
 shop that takes milk :O
 
 // AREAS //

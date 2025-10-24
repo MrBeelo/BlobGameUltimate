@@ -9,6 +9,7 @@ pub const SaveFile = struct {
     current_map: usize,
     played_intro: bool,
     milk: i32,
+    has_sword: bool
 };
 
 pub fn loadSaveFile(savefile: *SaveFile) !void {
@@ -39,6 +40,7 @@ pub fn loadSaveFile(savefile: *SaveFile) !void {
     savefile.current_map = @intCast(parsed_savefile.get("current_map").?.integer);
     savefile.played_intro = parsed_savefile.get("played_intro").?.bool;
     savefile.milk = @intCast(parsed_savefile.get("milk").?.integer);
+    savefile.has_sword = parsed_savefile.get("has_sword").?.bool;
 }
 
 pub fn saveSaveFile(savefile: *SaveFile) !void {
@@ -67,5 +69,6 @@ pub fn newSaveFile() SaveFile {
         .current_map = 0, 
         .played_intro = false,
         .milk = 0,
+        .has_sword = false
     };
 }

@@ -7,7 +7,7 @@ const ti = @import("timer.zig");
 const men = @import("menu.zig");
 const sav = @import("savefile.zig");
 
-var cutscene_timer: ti.Timer = ti.Timer{ .duration = 5 };
+var cutscene_timer: ti.Timer = ti.Timer{ .duration = 12 };
 var current_phase: i32 = 0;
 var cutscene_image_1: rl.Texture2D = undefined;
 var cutscene_image_2: rl.Texture2D = undefined;
@@ -95,7 +95,7 @@ pub fn drawIntro() void {
         3 => {
             const diff: f32 = timer_state * 100;
             drawIntroImageRec(timer_state, cutscene_image_3, .{ .x = 0 - diff, .y = 0 - diff, .width = 1920 + diff * 2, .height = 1080 + diff * 2 });
-            drawIntroTextWithFontSize(timer_state, "And destroy every living thing there is...", .{ .x = 400 + timer_state * 30, .y = 400 }, 70, "And so, the blob goes forth", .{ .x = 400, .y = 450 }, 120);
+            drawIntroTextWithFontSize(timer_state, "And destroy every living thing there is...", .{ .x = 400 + timer_state * 30, .y = 400 }, 70, "And so, the blob goes forth", .{ .x = 500, .y = 450 }, 120);
         },
         else => {}
     }
