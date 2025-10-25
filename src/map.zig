@@ -16,18 +16,10 @@ pub const TileAtlas = struct {
     atlas_width: i32
 };
 
-pub const TileType = enum {
-    AIR,
-    SOLID,
-    HAZARD,
-    CUSTOM,
-    TRIGGER
-};
-
 pub const Tile = struct {
     src_rect: rl.Rectangle,
     dest_rect: rl.Rectangle,
-    type: TileType,
+    is_milk: bool = false,
     texture_number: i32,
     should_draw: bool = true,
     y_offset: f32 = 0,
@@ -69,10 +61,11 @@ pub const Map = struct {
     pub fn draw(self: *Map) void {
         for(self.data) |*tile| {
             if(rl.checkCollisionRecs(tile.dest_rect, .{ .x = cam.camera.target.x - cam.camera.offset.x, .y = cam.camera.target.y - cam.camera.offset.y, .width = scr.sim_size.x, .height = scr.sim_size.y })) {
-                if((tile.type != .TRIGGER or (tile.type == .TRIGGER and main.f3)) and tile.should_draw) rl.drawTexturePro(tile_atlas.texture, tile.src_rect, tile.getSimDestRect(), .zero(), 0, .white);
-                if(main.f3) for(self.objects) |*object| object.drawDebug();
+                if(tile.should_draw) rl.drawTexturePro(tile_atlas.texture, tile.src_rect, tile.getSimDestRect(), .zero(), 0, .white);
             }
         }
+        
+        if(main.f3) for(self.objects) |*object| object.drawDebug();
     }
 };
 
@@ -92,16 +85,46 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
     var parsed: std.json.Parsed(std.json.Value) = try std.json.parseFromSlice(std.json.Value, main.allocator, buffer, .{});
     defer parsed.deinit();
     
-    const parsed_map = parsed.value.object;
-    const layers_val = parsed_map.get("layers").?.array.getLast().object;
+    const layers = parsed.value.object.get("layers").?.array.items;
+    var map_width: i64 = undefined;
+    var map_height: i64 = undefined;
+    var data_array: std.array_list.Managed(std.json.Value) = undefined;
+    var player_spawn_pos = rl.Vector2{ .x = 0, .y = 0 };
+    var enemy_spawn_poses = std.array_list.Managed(EnemySpawnPos).init(main.allocator);
+    var objects = std.array_list.Managed(obj.Object).init(main.allocator);
     
-    const width = layers_val.get("width").?.integer;
-    const height = layers_val.get("height").?.integer;
-    const map_size = rl.Vector2{ .x = @floatFromInt(width), .y = @floatFromInt(height) };
+    for (layers) |layer| {
+        const eql = std.mem.eql;
+        const layer_object = layer.object;
+        const layer_name = layer_object.get("name").?.string;
+        
+        if(eql(u8, layer_name, "tiles")) {
+            map_width = layer_object.get("width").?.integer;
+            map_height = layer_object.get("height").?.integer;
+            data_array = layer_object.get("data").?.array;
+        } else if(eql(u8, layer_name, "objects")) {
+            const tiled_objects = layer_object.get("objects").?.array.items;
+            for(tiled_objects) |object| {
+                const tiled_object_object = object.object; // I know this is confusing bare with me...
+                const tiled_object_name = tiled_object_object.get("name").?.string;
+                
+                const x: f32 = @floatFromInt(tiled_object_object.get("x").?.integer);
+                const y: f32 = @floatFromInt(tiled_object_object.get("y").?.integer);
+                const width: f32 = @floatFromInt(tiled_object_object.get("width").?.integer);
+                const height: f32 = @floatFromInt(tiled_object_object.get("height").?.integer);
+                
+                if(eql(u8, tiled_object_name, "") or eql(u8, tiled_object_name, "solid")) objects.append(.{ .obj_type = .SOLID, .rect = .{ .x = x, .y = y, .width = width, .height = height } }) catch crsh.crash(.OUT_OF_MEMORY);
+                if(eql(u8, tiled_object_name, "hazard")) objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = x, .y = y, .width = width, .height = height } }) catch crsh.crash(.OUT_OF_MEMORY);
+                if(eql(u8, tiled_object_name, "player")) player_spawn_pos = .{ .x = x, .y = y };
+                if(eql(u8, tiled_object_name, "circle")) enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = x, .y = y } }) catch crsh.crash(.OUT_OF_MEMORY);
+                if(eql(u8, tiled_object_name, "triangle")) enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = x, .y = y } }) catch crsh.crash(.OUT_OF_MEMORY);
+            }
+        }
+    }
     
+    const map_size = rl.Vector2{ .x = @floatFromInt(map_width), .y = @floatFromInt(map_height) };
     const tile_size: f32 = 32;
     
-    const data_array = layers_val.get("data").?.array;
     var shifted_data_array = std.array_list.Managed(i32).init(main.allocator);
     for(data_array.items) |d_array| {
         const texture_number = @as(i32, @intCast(d_array.integer));
@@ -112,30 +135,20 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
     for(shifted_data_array.items) |tile| { if(tile == -1) air_tiles += 1; }
     var data = try main.allocator.alloc(Tile, shifted_data_array.items.len - air_tiles);
     
-    var player_spawn_pos = rl.Vector2{ .x = 0, .y = 0 };
-    var enemy_spawn_poses = std.array_list.Managed(EnemySpawnPos).init(main.allocator);
     var milk_poses = std.array_list.Managed(usize).init(main.allocator);
-    var objects = std.array_list.Managed(obj.Object).init(main.allocator);
     
     objects.append(.{ .obj_type = .ADVANCE_MAP, .rect = .{ .x = map_size.x * tile_size + pl.def_player_size.x / 2, .y = 0, .width = 10, .height = map_size.y * tile_size }}) catch crsh.crash(.OUT_OF_MEMORY);
     
     var variable_index: usize = 0;
     for(shifted_data_array.items, 0..) |texture_number, index| {
-        const tile_type: TileType = switch(texture_number) {
-            0...(8*4-1) => .SOLID,
-            (8*4)...(8*5-1) => .HAZARD,
-            (8*5)...(8*6-1) => .CUSTOM,
-            (8*6)...(8*7-1) => .TRIGGER,
-            else => .AIR
-        };
-        
         const tile_pos: rl.Vector2 = .{ .x = @mod(@as(f32, @floatFromInt(index)), map_size.x) * tile_size, .y = @floor(@as(f32, @floatFromInt(index)) / map_size.x) * tile_size };
+        const milk_texture_number = 41;
         
-        if(tile_type != .AIR) {
+        if(texture_number != -1) {
             data[variable_index] = Tile{
                 .src_rect = .{ .x = @as(f32, @floatFromInt(@mod(texture_number, tile_atlas.atlas_width))) * tile_atlas.atlas_tile_size, .y = @as(f32, @floatFromInt(@divFloor(texture_number, tile_atlas.atlas_width))) * tile_atlas.atlas_tile_size, .width = tile_atlas.atlas_tile_size, .height = tile_atlas.atlas_tile_size },
                 .dest_rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size },
-                .type = tile_type,
+                .is_milk = if(texture_number == milk_texture_number) true else false,
                 .texture_number = texture_number,
                 .id = variable_index
             };
@@ -147,10 +160,7 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
                 
         switch (texture_number) {
             40 => objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }}) catch crsh.crash(.OUT_OF_MEMORY),
-            41 => { objects.append(.{ .obj_type = .MILK, .rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size } }) catch crsh.crash(.OUT_OF_MEMORY); milk_poses.append(variable_index) catch crsh.crash(.OUT_OF_MEMORY); },
-            48 => player_spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y },
-            49 => enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
-            50 => enemy_spawn_poses.append(.{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = tile_pos.x, .y = tile_pos.y } }) catch crsh.crash(.OUT_OF_MEMORY),
+            milk_texture_number => { objects.append(.{ .obj_type = .MILK, .rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size } }) catch crsh.crash(.OUT_OF_MEMORY); milk_poses.append(variable_index) catch crsh.crash(.OUT_OF_MEMORY); },
             else => {}
         }
     }
@@ -182,7 +192,7 @@ pub fn unloadTileAtlas() void {
 }
 
 pub fn initMaps() void {
-    const map_amount = 3;
+    const map_amount = 1;
     var map_list = std.array_list.Managed(Map).init(main.allocator);
     for(0..map_amount) |index| map_list.append(loadMap(std.fmt.allocPrintSentinel(main.allocator, "res/data/{d}.json", .{index + 1}, 0) catch crsh.crash(.OUT_OF_MEMORY), index) catch crsh.crash(.MAP_ERROR )) catch crsh.crash(.OUT_OF_MEMORY);
     maps = map_list.toOwnedSlice() catch crsh.crash(.OUT_OF_MEMORY);

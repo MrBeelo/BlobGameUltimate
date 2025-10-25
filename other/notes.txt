@@ -7,23 +7,30 @@ Redo main menu logo (make it white) because it looks like shit
 
 // IDEAS //
 A new art style, along with the old 2 ones
-A total of 5 bosses, 3 attacks each, with final boss being either giant cube or beelo
-50 levels 0_0 (way easier tho)
+A total of 3 bosses, 3 attacks each, with final boss being either giant cube or beelo
+30 levels 0_0 (way easier tho)
 shop that takes milk :O
 
 // AREAS //
 1. Plains
 2. The Dungeon
-3. The Caves
-4. Bad Memories (bb1 and bb2)
-5. Ascention
+3. Bad Memories (bb1 and bb2, 5 lvls) + Ascention
 
 // BOSSES //
 1. Big Triangle Guardian
 2. The Dungeon Creeper
-3. Giant Spidey
-4. Purple Triangle Boss (from bb1)
-5. Mr. Beelo (like grand mother silk/the radiance)
+3. Mr. Beelo (like grand mother silk/the radiance)
+
+// ENEMIES //
+1-1. Simple Triangle (no legs of course, 2 eyes, functions like goomba, maybe blue?)
+1-2. Enranged Triangle (same as simple, is faster, does more damage, and knocks player back more, maybe orange?)
+1-3. Flying Triangle (follows a set path, doesn't chase player, maybe green?)
+2-1. ?
+2-2. ?
+2-3. ?
+3-1. Circle (from Blob Game 1)
+3-2. Triangle (from Blob Game 1)
+3-3. Fred (from Blob Game 2, functions the exact same) 
 
 // STORYLINE //
 initial cutscene:
