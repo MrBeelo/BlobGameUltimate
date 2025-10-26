@@ -16,6 +16,7 @@ const sta = @import("stars.zig");
 const int = @import("intro.zig");
 const sha = @import("shake.zig");
 const shad = @import("shader.zig");
+const pop = @import("popup.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -50,6 +51,7 @@ pub fn updateGame() void {
     cam.updateCamera();
     if(inp.getPressKey(.ESCAPE)) men.changeGameState(.PAUSED);
     sha.updateScreenShakeTimer();
+    pop.updateMilkPopup();
 }
 
 pub fn drawGame() void {
@@ -59,6 +61,7 @@ pub fn drawGame() void {
     player.draw();
     rl.endMode2D();
     player.drawHealthBar();
+    if(pop.milk_popup_timer.active) pop.drawMilkPopup();
 }
 
 pub fn main() void {

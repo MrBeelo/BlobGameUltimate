@@ -6,6 +6,7 @@ const ti = @import("timer.zig");
 const obj = @import("object.zig");
 const sav = @import("savefile.zig");
 const crsh = @import("crash.zig");
+const pop = @import("popup.zig");
 
 pub const CollisionDirectionX = enum {
     LEFT,
@@ -157,7 +158,7 @@ pub const EntityData = struct {
         
         for (map.maps[main.savefile.current_map].objects) |*object| {
             if(!object.is_disabled) switch (object.obj_type) {
-                .HAZARD => { if(self.colliding(object.rect) and self.is_player) self.health -= 100; },
+                .HAZARD => { if(self.colliding(object.rect) and self.is_player) self.health = 0; },
                 .SOLID => { self.manageSolidCollisions(object.rect, horizontal); },
                 .ADVANCE_MAP => { if(self.colliding(object.rect) and self.is_player) map.advanceMap(); },
                 .MILK => {
@@ -170,6 +171,7 @@ pub const EntityData = struct {
                             object.is_disabled = true;
                             main.savefile.milk += 1;
                             sav.saveSaveFile(&main.savefile) catch crsh.crash(.SAVE_ERROR);
+                            pop.triggerMilkPopup();
                         }
                     }
                 }

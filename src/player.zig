@@ -53,9 +53,21 @@ pub const Player = struct {
         if (main.f3) rl.drawRectangleLinesEx(self.data.getWallJumpHitBox(), 3, .sky_blue);
     }
     
-    pub fn drawHealthBar(self: *Player) void {
-        rl.drawRectangleRounded(.{ .x = scr.ui_buffer, .y = scr.ui_buffer, .width = 4 * self.data.health, .height = 40 }, 0.7, 100, .red);
-        rl.drawRectangleRoundedLinesEx(.{ .x = scr.ui_buffer, .y = scr.ui_buffer, .width = 4 * base_player_health, .height = 40 }, 0.7, 100, 5, .black);
+    pub fn drawHealthBar(self: *Player) void {         
+        const up_left_point: rl.Vector2 = .{ .x = 0, .y = scr.ui_buffer };
+        const up_right_point: rl.Vector2 = .{ .x = scr.ui_buffer + 4 * self.data.health + 100, .y = scr.ui_buffer };
+        const bottom_left_point: rl.Vector2 = .{ .x = 0, .y = scr.ui_buffer + 45 };
+        const bottom_right_point: rl.Vector2 = .{ .x = scr.ui_buffer + 4 * self.data.health * 15 / 16 + 100, .y = scr.ui_buffer + 45 };
+        const thickness: f32 = 8;
+        const color = rl.colorLerp(.red, .green, self.data.health / 100);
+        
+        rl.drawTriangle(up_left_point, bottom_left_point, up_right_point, color);
+        rl.drawTriangle(bottom_left_point, bottom_right_point, up_right_point, color);
+        
+        rl.drawLineEx(up_left_point, .{ .x = up_right_point.x + 3, .y = up_right_point.y }, thickness, .black);
+        rl.drawLineEx(bottom_left_point, .{ .x = bottom_right_point.x + 3, .y = bottom_right_point.y }, thickness, .black);
+        rl.drawLineEx(up_right_point, bottom_right_point, thickness, .black);
+        
         txt.drawCustomText(std.fmt.allocPrintSentinel(main.allocator, "{d:.0}/{d:.0}", .{self.data.health, base_player_health}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .ITALIC, 24, .{ .x = scr.ui_buffer * 2, .y = scr.ui_buffer * 2 }, .black);
     }
     
