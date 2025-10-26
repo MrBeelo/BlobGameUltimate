@@ -3,6 +3,8 @@ const rl = @import("raylib");
 const main = @import("main.zig");
 const crsh = @import("crash.zig");
 const men = @import("menu.zig");
+const sha = @import("shake.zig");
+const shad = @import("shader.zig");
 
 pub const sim_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
 pub var window_size: rl.Vector2 = .{ .x = 1920, .y = 1080 };
@@ -22,7 +24,10 @@ pub fn updateTargetScale() void {
 
 pub fn drawTarget() void {
     const target_src = rl.Rectangle{ .x = 0, .y = 0, .width = @floatFromInt(target.texture.width), .height = @floatFromInt(-target.texture.height) };
-    const target_dest = rl.Rectangle{ .x = (window_size.x - sim_size.x * target_scale) * 0.5, .y = (window_size.y - sim_size.y * target_scale) * 0.5, .width = sim_size.x * target_scale, .height = sim_size.y * target_scale };
+    const target_dest = rl.Rectangle{ .x = (window_size.x - sim_size.x * target_scale) * 0.5 + sha.screenShakeModifier().x, .y = (window_size.y - sim_size.y * target_scale) * 0.5 + sha.screenShakeModifier().y, .width = sim_size.x * target_scale, .height = sim_size.y * target_scale };
     const color = if(main.game_state == .MAP_TRANSITION) men.map_transition_color else rl.Color.white;
+    
+    if(main.game_state == .PAUSED) rl.beginShaderMode(shad.blur);
     rl.drawTexturePro(target.texture, target_src, target_dest, .zero(), 0, color);
+    if(main.game_state == .PAUSED) rl.endShaderMode();
 }

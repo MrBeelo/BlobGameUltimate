@@ -192,7 +192,7 @@ pub fn unloadTileAtlas() void {
 }
 
 pub fn initMaps() void {
-    const map_amount = 1;
+    const map_amount = 2;
     var map_list = std.array_list.Managed(Map).init(main.allocator);
     for(0..map_amount) |index| map_list.append(loadMap(std.fmt.allocPrintSentinel(main.allocator, "res/data/{d}.json", .{index + 1}, 0) catch crsh.crash(.OUT_OF_MEMORY), index) catch crsh.crash(.MAP_ERROR )) catch crsh.crash(.OUT_OF_MEMORY);
     maps = map_list.toOwnedSlice() catch crsh.crash(.OUT_OF_MEMORY);

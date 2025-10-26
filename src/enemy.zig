@@ -5,6 +5,7 @@ const crsh = @import("crash.zig");
 const ti = @import("timer.zig");
 const ent = @import("entity.zig");
 const pl = @import("player.zig");
+const sha = @import("shake.zig");
 
 var circle_atlas: rl.Texture2D = undefined;
 var triangle_atlas: rl.Texture2D = undefined;
@@ -47,6 +48,7 @@ pub const Enemy = struct {
                 main.player.data.immunity_timer.activate();
                 main.player.data.hit_timer.activate();
                 main.player.data.knockBack(self.data.pos.x < main.player.data.pos.x, 7);
+                sha.shakeScreen(0.2, 3);
             }
             
             if(main.player.sword.checkSwordCollision(self.getHurtBox()) and !self.data.immunity_timer.active) {

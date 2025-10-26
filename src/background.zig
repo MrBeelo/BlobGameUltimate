@@ -64,11 +64,21 @@ pub const MMParams = struct {
                 2 => "What even is JavaScript? (By MrBeelo)",
                 3 => "I hate my life by MrBeelo",
                 4 => "AAAAAAAAAAAAAAAAAAAAAAAAAAAA (By MrBeelo)",
-                5 => "Sporg Gkek Fungoon Haha Funny By MrBeelo",
+                5 => "Sporg Gkek Fungoon Haha Funny by MrBeelo",
                 6 => "WHERE'S MY MONDAY JOKE?!? (By MrBeelo)",
                 7 => "<insert meme here> by MrBeelo",
                 8 => "public static void main(string[] args) by MrBeelo",
                 9 => "Did you know that Blob Game 1 sucks? (By MrBeelo)",
+                10 => "DEN SOU KANO TON AGIO, AAAAAAAAA (By MrBeelo)",
+                11 => "borb (By MrBeelo)",
+                12 => "Hey Google! Good Afternoon! (By MrBeelo)",
+                13 => "10/10 peak gameplay by MrBeelo",
+                14 => "DM me \"blob game ultimate is the best game :)\" for a free iPhone by MrBeelo",
+                15 => "I can't think of more jokes for here (By MrBeelo)",
+                16 => "It doesn't look THAT bad... (By MrBeelo)",
+                17 => "la vasta la vida loca loca loca loca by MrBeelo",
+                18 => "      by MrBeelo",
+                19 => "Did you know that Blob Game 2 ALSO sucks but less than BB1? (By MrBeelo)",
                 else => "ERROR ERROR ERROR (By MrBeelo)"
             };
             txt.drawCustomText(text, .ELEVATIA, .ITALIC, 32, .{ .x = scr.ui_buffer, .y = scr.sim_size.y - scr.ui_buffer - 32 }, .white);
@@ -206,7 +216,7 @@ pub fn getBackgroundType() BackgroundType {
 }
 
 pub fn loadBackgrounds() void {
-    splash_text_index = rl.getRandomValue(0, 9);
+    splash_text_index = rl.getRandomValue(0, 19);
     mm_blob_strip = rl.loadTexture("res/sprite/blob_strip.png") catch crsh.crash(.RAYLIB_ERROR);
     zig_logo = rl.loadTexture("res/sprite/zig_logo.png") catch crsh.crash(.RAYLIB_ERROR);
     raylib_logo = rl.loadTexture("res/sprite/raylib_logo.png") catch crsh.crash(.RAYLIB_ERROR);

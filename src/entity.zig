@@ -64,6 +64,11 @@ pub const EntityData = struct {
         if(self.is_being_knocked) {
             if((self.is_player and self.vel.y >= 0) or (!self.is_player and self.collisionsY[@intFromEnum(CollisionDirectionY.DOWN)])) self.is_being_knocked = false;
         }
+        
+        const tilesize = map.maps[main.savefile.current_map].tile_size;
+        self.pos.x = std.math.clamp(self.pos.x, -self.size.x + 5, map.maps[main.savefile.current_map].map_size.x * tilesize - 5);
+        
+        if(self.pos.y > map.maps[main.savefile.current_map].map_size.y * tilesize) self.health = 0;
     }
     
     pub fn moveLeft(self: *EntityData) void {

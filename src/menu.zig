@@ -37,7 +37,7 @@ pub fn changeGameState(game_state: GameState) void {
         return;
     }
     
-    if(game_state == .MAIN and main.game_state == .PAUSED) bg.splash_text_index = rl.getRandomValue(0, 9);
+    if(game_state == .MAIN and main.game_state == .PAUSED) bg.splash_text_index = rl.getRandomValue(0, 19);
     main.game_state = game_state;
     menus[@intFromEnum(game_state)].selected_button_index = 0;
 }

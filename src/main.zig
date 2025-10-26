@@ -14,6 +14,8 @@ const sav = @import("savefile.zig");
 const bg = @import("background.zig");
 const sta = @import("stars.zig");
 const int = @import("intro.zig");
+const sha = @import("shake.zig");
+const shad = @import("shader.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -47,6 +49,7 @@ pub fn updateGame() void {
     player.update();
     cam.updateCamera();
     if(inp.getPressKey(.ESCAPE)) men.changeGameState(.PAUSED);
+    sha.updateScreenShakeTimer();
 }
 
 pub fn drawGame() void {
@@ -98,6 +101,9 @@ pub fn main() void {
     
     int.loadIntro();
     
+    shad.loadShaders();
+    defer shad.unloadShaders();
+    
     sav.loadSaveFile(&savefile) catch crsh.crash(.SAVE_ERROR);
     
     while (!rl.windowShouldClose() and !should_exit) {
@@ -113,14 +119,7 @@ pub fn main() void {
         rl.clearBackground(.white);
         
         bg.drawBackground(bg.getBackgroundType());
-        if(game_state == .PLAYING or game_state == .MAP_TRANSITION) {
-            drawGame();
-        } else if(game_state == .PAUSED) {
-            drawGame();
-            men.drawMenus();
-        } else {
-            men.drawMenus();
-        }
+        if(game_state == .PLAYING or game_state == .MAP_TRANSITION or game_state == .PAUSED) drawGame();
         
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 80 }, .black);
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Current Map: {d}", .{savefile.current_map}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 120 }, .black);
@@ -134,5 +133,7 @@ pub fn main() void {
         defer rl.endDrawing();
         rl.clearBackground(.black);
         scr.drawTarget();
+        
+        if(game_state != .PLAYING and game_state != .MAP_TRANSITION) men.drawMenus();
     }
 }
