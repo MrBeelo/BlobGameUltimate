@@ -19,7 +19,6 @@ pub const TileAtlas = struct {
 pub const Tile = struct {
     src_rect: rl.Rectangle,
     dest_rect: rl.Rectangle,
-    is_milk: bool = false,
     texture_number: i32,
     should_draw: bool = true,
     y_offset: f32 = 0,
@@ -148,7 +147,6 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
             data[variable_index] = Tile{
                 .src_rect = .{ .x = @as(f32, @floatFromInt(@mod(texture_number, tile_atlas.atlas_width))) * tile_atlas.atlas_tile_size, .y = @as(f32, @floatFromInt(@divFloor(texture_number, tile_atlas.atlas_width))) * tile_atlas.atlas_tile_size, .width = tile_atlas.atlas_tile_size, .height = tile_atlas.atlas_tile_size },
                 .dest_rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size },
-                .is_milk = if(texture_number == milk_texture_number) true else false,
                 .texture_number = texture_number,
                 .id = variable_index
             };

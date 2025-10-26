@@ -86,11 +86,14 @@ pub const MMParams = struct {
     }
 };
 
+const sun_duration: f32 = 50;
+const moon_duration: f32 = 10;
+
 pub const BBU1Params = struct {
     top_color: rl.Color = .sky_blue,
     bottom_color: rl.Color = .blue,
     day_phase: usize = 0,
-    sun_moon_timer: ti.Timer = .{ .auto_start = true, .duration = 100, .repeat = true },
+    sun_moon_timer: ti.Timer = .{ .auto_start = true, .duration = sun_duration, .repeat = true },
     sun_moon_radius: f32 = 60,
     
     pub fn timerState(self: *BBU1Params) f32 {
@@ -124,7 +127,13 @@ pub const BBU1Params = struct {
     
     pub fn update(self: *BBU1Params) void {
         self.sun_moon_timer.update();
-        if(self.sun_moon_timer.called and self.day_phase >= 3) self.day_phase = 0 else if(self.sun_moon_timer.called) self.day_phase += 1;
+        if(self.sun_moon_timer.called and self.day_phase >= 3) {
+            self.day_phase = 0; 
+            self.sun_moon_timer.duration = sun_duration;
+        } else if(self.sun_moon_timer.called) {
+            self.sun_moon_timer.duration = if(self.day_phase + 1 == 2 or self.day_phase + 1 == 3) moon_duration else sun_duration;
+            self.day_phase += 1;
+        }
         
         const day_top_color: rl.Color = .{ .r = 102, .g = 191, .b = 255, .a = 255 };
         const night_top_color: rl.Color = .{ .r = 0, .g = 42, .b = 135, .a = 255 };
@@ -183,7 +192,7 @@ pub const BBU1Params = struct {
 };
 
 var mm = MMParams{};
-var bbu1 = BBU1Params{};
+pub var bbu1 = BBU1Params{};
 
 pub fn updateBackground(bg_type: BackgroundType) void {
     switch (bg_type) {
