@@ -86,8 +86,8 @@ pub const MMParams = struct {
     }
 };
 
-const sun_duration: f32 = 50;
-const moon_duration: f32 = 10;
+const sun_duration: f32 = 100;
+const moon_duration: f32 = 15;
 
 pub const BBU1Params = struct {
     top_color: rl.Color = .sky_blue,

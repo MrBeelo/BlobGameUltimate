@@ -206,18 +206,6 @@
                  "width":0,
                  "x":416,
                  "y":640
-                }, 
-                {
-                 "height":0,
-                 "id":20,
-                 "name":"circle",
-                 "point":true,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":1056,
-                 "y":544
                 }],
          "opacity":1,
          "type":"objectgroup",

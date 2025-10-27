@@ -3,25 +3,36 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "2.tmx",
+    "activeFile": "3.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "fileStates": {
         "1.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
             "scale": 0.5,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 895,
-                "y": 583
+                "x": 960,
+                "y": 543
             }
         },
         "2.tmx": {
             "scale": 0.5107177734375,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1023.0699364214349,
+                "x": 1152.2998231273007,
                 "y": 543.3529327405707
+            }
+        },
+        "3.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1070,
+                "y": 617
             }
         },
         "tileset.tsx": {
@@ -34,17 +45,20 @@
     "map.height": 34,
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
-    "map.width": 64,
+    "map.width": 68,
     "openFiles": [
         "1.tmx",
         "tileset.tsx",
-        "2.tmx"
+        "2.tmx",
+        "3.tmx"
     ],
     "project": "blobgameultimate.tiled-project",
+    "property.type": "string",
     "recentFiles": [
         "1.tmx",
         "tileset.tsx",
-        "2.tmx"
+        "2.tmx",
+        "3.tmx"
     ],
     "tileset.lastUsedFormat": "tsx"
 }

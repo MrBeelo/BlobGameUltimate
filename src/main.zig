@@ -17,6 +17,7 @@ const int = @import("intro.zig");
 const sha = @import("shake.zig");
 const shad = @import("shader.zig");
 const pop = @import("popup.zig");
+const lit = @import("light.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -61,21 +62,12 @@ pub fn drawGame() void {
     player.draw();
     rl.endMode2D();
     
-    // LIGHTNING
-    var dimmed_color: rl.Color = .blank;
-    const night_color = rl.colorAlpha(.black, 0.5);
-    if(!bg.bbu1.isDay()) {
-        dimmed_color = night_color;
-    } else if (bg.bbu1.isDay()) {
-        if(bg.bbu1.globalState() < 0.2) dimmed_color = rl.colorLerp(.blank, night_color, bg.bbu1.sunriseFactor());
-        if(bg.bbu1.globalState() > 0.8) dimmed_color = rl.colorLerp(.blank, night_color, bg.bbu1.sunsetFactor());
-    }
-    rl.drawRectangle(0, 0, scr.sim_size.x, scr.sim_size.y, dimmed_color);
-    rl.beginBlendMode(.additive);
-    rl.drawCircleGradient(@intFromFloat(bg.bbu1.calculateSunMoonPos().x), @intFromFloat(bg.bbu1.calculateSunMoonPos().y), 700, if(bg.bbu1.isDay()) .white else rl.colorAlpha(.white, 0.4), .blank);
-    rl.endBlendMode();
+    lit.handleGlobalLights();
     
-    // UI
+    rl.beginMode2D(cam.camera);
+    lit.handleRelativeLights();
+    rl.endMode2D();
+    
     player.drawHealthBar();
     if(pop.milk_popup_timer.active) pop.drawMilkPopup();
 }
