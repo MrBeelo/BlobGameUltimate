@@ -4,8 +4,8 @@ const main = @import("main.zig");
 const crsh = @import("crash.zig");
 const pl = @import("player.zig");
 const ti = @import("timer.zig");
+const res = @import("resources.zig");
 
-var sword_texture: rl.Texture2D = undefined;
 const def_sword_size = rl.Vector2{ .x = 30, .y = 80 };
 const relative_pivot_pos = rl.Vector2{ .x = def_sword_size.x / 2, .y = def_sword_size.y * 5 / 8 };
 
@@ -58,16 +58,8 @@ pub const Sword = struct {
     }
     
     pub fn draw(self: *Sword) void {
-        if(self.sword_active_timer.active) rl.drawTexturePro(sword_texture, rl.Rectangle{ .x = 0, .y = 0, .width = 15, .height = 40 }, .{ .x = self.pivot.x, .y = self.pivot.y, .width = def_sword_size.x, .height = def_sword_size.y }, relative_pivot_pos, self.rot * self.flip, .white);
+        if(self.sword_active_timer.active) rl.drawTexturePro(res.sword_texture, rl.Rectangle{ .x = 0, .y = 0, .width = 15, .height = 40 }, .{ .x = self.pivot.x, .y = self.pivot.y, .width = def_sword_size.x, .height = def_sword_size.y }, relative_pivot_pos, self.rot * self.flip, .white);
         if(main.f3) rl.drawCircleV(self.pivot, 5, .sky_blue);
         if(main.f3) rl.drawCircleV(self.getTip(), 5, .dark_blue);
     }
 };
-
-pub fn loadSword() void {
-    sword_texture = rl.loadTexture("res/sprite/sword.png") catch crsh.crash(.RAYLIB_ERROR);
-}
-
-pub fn unloadSword() void {
-    rl.unloadTexture(sword_texture);
-}

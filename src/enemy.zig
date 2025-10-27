@@ -6,9 +6,8 @@ const ti = @import("timer.zig");
 const ent = @import("entity.zig");
 const pl = @import("player.zig");
 const sha = @import("shake.zig");
+const res = @import("resources.zig");
 
-var circle_atlas: rl.Texture2D = undefined;
-var triangle_atlas: rl.Texture2D = undefined;
 pub var enemies: std.array_list.Managed(Enemy) = undefined;
 
 pub const EnemyType = enum {
@@ -109,16 +108,12 @@ pub const Enemy = struct {
     }
 };
 
-pub fn loadEnemies() void {
+pub fn initEnemies() void {
     enemies = std.array_list.Managed(Enemy).init(main.allocator);
-    circle_atlas = rl.loadTexture("res/sprite/circle_atlas.png") catch crsh.crash(.RAYLIB_ERROR);
-    triangle_atlas = rl.loadTexture("res/sprite/triangle_atlas.png") catch crsh.crash(.RAYLIB_ERROR);
 }
 
-pub fn unloadEnemies() void {
+pub fn deinitEnemies() void {
     enemies.deinit();
-    rl.unloadTexture(circle_atlas);
-    rl.unloadTexture(triangle_atlas);
 }
 
 pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
@@ -141,9 +136,9 @@ pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
     };
     
     const texture: rl.Texture2D = switch (ent_type) {
-        .CIRCLE => circle_atlas,
-        .TRIANGLE => triangle_atlas,
-        .TRIANGLE_BOSS => triangle_atlas
+        .CIRCLE => res.circle_atlas,
+        .TRIANGLE => res.triangle_atlas,
+        .TRIANGLE_BOSS => res.triangle_atlas
     };
     
     const detection_radius: f32 = switch (ent_type) {

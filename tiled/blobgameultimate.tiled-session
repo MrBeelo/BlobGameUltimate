@@ -3,10 +3,11 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "3.tmx",
+    "activeFile": "4.tmx",
     "expandedProjectPaths": [
         "."
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "1.tmx": {
             "expandedObjectLayers": [
@@ -23,7 +24,7 @@
             "scale": 0.5107177734375,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1152.2998231273007,
+                "x": 1153.2788374205268,
                 "y": 543.3529327405707
             }
         },
@@ -35,30 +36,52 @@
                 "y": 617
             }
         },
+        "4.tmx": {
+            "scale": 0.5317555147058823,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1088.8462535649471,
+                "y": 544.4231267824734
+            }
+        },
+        "tileset-bb12.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tileset-bbu1.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tileset-global.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "tileset.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         }
     },
     "last.exportedFilePath": "/home/mrbeelo/Projects/Games/BlobGameUltimate/tiled",
-    "last.imagePath": "/home/mrbeelo/Projects/Games/BlobGameUltimate/res/sprite",
+    "last.imagePath": "/home/mrbeelo/Projects/Games/BlobGameUltimate/res/sprite/tileset",
     "map.height": 34,
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
     "map.width": 68,
     "openFiles": [
-        "1.tmx",
-        "tileset.tsx",
-        "2.tmx",
-        "3.tmx"
+        "4.tmx",
+        "tileset.tsx"
     ],
     "project": "blobgameultimate.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "1.tmx",
         "tileset.tsx",
+        "4.tmx",
+        "tileset-bb12.tsx",
+        "tileset-bbu1.tsx",
+        "tileset-global.tsx",
+        "3.tmx",
         "2.tmx",
-        "3.tmx"
+        "1.tmx"
     ],
     "tileset.lastUsedFormat": "tsx"
 }

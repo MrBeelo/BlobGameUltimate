@@ -15,9 +15,9 @@ const bg = @import("background.zig");
 const sta = @import("stars.zig");
 const int = @import("intro.zig");
 const sha = @import("shake.zig");
-const shad = @import("shader.zig");
 const pop = @import("popup.zig");
 const lit = @import("light.zig");
+const res = @import("resources.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -80,40 +80,21 @@ pub fn main() void {
     
     rl.setExitKey(.null);
     
-    txt.loadFonts();
-    defer txt.unloadFonts();
+    res.loadResources();
+    defer res.unloadResources();
     
-    pl.loadPlayer();
-    defer pl.unloadPlayer();
     player = pl.newPlayer();
     
-    ene.loadEnemies();
-    defer ene.unloadEnemies();
+    ene.initEnemies();
+    defer ene.deinitEnemies();
     
-    map.loadTileAtlas();
-    defer map.unloadTileAtlas();
-    
+    map.initTileAtlas();
     cam.initCamera();
     scr.initTarget();
-    
-    men.loadMenus();
-    defer men.unloadMenus();
     men.initMenus();
-    
     map.initMaps();
-    
-    sw.loadSword();
-    defer sw.unloadSword();
-    
-    bg.loadBackgrounds();
-    defer bg.unloadBackgrounds();
-    
+    bg.initBackgrounds();
     sta.initStars();
-    
-    int.loadIntro();
-    
-    shad.loadShaders();
-    defer shad.unloadShaders();
     
     sav.loadSaveFile(&savefile) catch crsh.crash(.SAVE_ERROR);
     

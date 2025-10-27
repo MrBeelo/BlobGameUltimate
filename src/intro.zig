@@ -6,29 +6,14 @@ const crsh = @import("crash.zig");
 const ti = @import("timer.zig");
 const men = @import("menu.zig");
 const sav = @import("savefile.zig");
+const res = @import("resources.zig");
 
 var cutscene_timer: ti.Timer = ti.Timer{ .duration = 12 };
 var current_phase: i32 = 0;
-var cutscene_image_1: rl.Texture2D = undefined;
-var cutscene_image_2: rl.Texture2D = undefined;
-var cutscene_image_3: rl.Texture2D = undefined;
-
 
 pub fn playIntro() void {
     current_phase = 1;
     cutscene_timer.activate();
-}
-
-pub fn loadIntro() void {
-    cutscene_image_1 = rl.loadTexture("res/sprite/cutscene/blob_cutscene_1.png") catch crsh.crash(.RAYLIB_ERROR);
-    cutscene_image_2 = rl.loadTexture("res/sprite/cutscene/blob_cutscene_2.png") catch crsh.crash(.RAYLIB_ERROR);
-    cutscene_image_3 = rl.loadTexture("res/sprite/cutscene/blob_cutscene_3.png") catch crsh.crash(.RAYLIB_ERROR);
-}
-
-pub fn unloadIntro() void {
-    rl.unloadTexture(cutscene_image_1);
-    rl.unloadTexture(cutscene_image_2);
-    rl.unloadTexture(cutscene_image_3);
 }
 
 pub fn updateIntro() void {
@@ -85,16 +70,16 @@ pub fn drawIntro() void {
     const timer_state = (@as(f32, @floatCast(rl.getTime())) - cutscene_timer.start_time) / cutscene_timer.duration;
     switch (current_phase) {
         1 => {
-            drawIntroImage(timer_state, cutscene_image_1, .{ .x = 0 - timer_state * 100, .y = 0 }, 1.3);
+            drawIntroImage(timer_state, res.cutscene_image_1, .{ .x = 0 - timer_state * 100, .y = 0 }, 1.3);
             drawIntroText(timer_state, "We find ourselves in a place", .{ .x = 200 + timer_state * 30, .y = 400 }, "where the world is governed by shapes", .{ .x = 500 + timer_state * 30, .y = 700 });
         },
         2 => {
-            drawIntroImage(timer_state, cutscene_image_2, .{ .x = -100 + timer_state * 100, .y = 0 }, 1.3);
+            drawIntroImage(timer_state, res.cutscene_image_2, .{ .x = -100 + timer_state * 100, .y = 0 }, 1.3);
             drawIntroText(timer_state, "but a little cube with legs stands out...", .{ .x = 800 - timer_state * 30, .y = 400 }, "For it is to seek the legendary sword of death...", .{ .x = 500 - timer_state * 30, .y = 700 });
         },
         3 => {
             const diff: f32 = timer_state * 100;
-            drawIntroImageRec(timer_state, cutscene_image_3, .{ .x = 0 - diff, .y = 0 - diff, .width = 1920 + diff * 2, .height = 1080 + diff * 2 });
+            drawIntroImageRec(timer_state, res.cutscene_image_3, .{ .x = 0 - diff, .y = 0 - diff, .width = 1920 + diff * 2, .height = 1080 + diff * 2 });
             drawIntroTextWithFontSize(timer_state, "And destroy every living thing there is...", .{ .x = 400 + timer_state * 30, .y = 400 }, 70, "And so, the blob goes forth", .{ .x = 500, .y = 450 }, 120);
         },
         else => {}

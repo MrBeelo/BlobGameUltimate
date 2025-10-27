@@ -10,6 +10,7 @@ const men = @import("menu.zig");
 const pl = @import("player.zig");
 const sav = @import("savefile.zig");
 const lit = @import("light.zig");
+const res = @import("resources.zig");
 
 pub const TileAtlas = struct {
     texture: rl.Texture2D,
@@ -171,8 +172,6 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
     var variable_index: usize = 0;
     for(shifted_data_array.items, 0..) |texture_number, index| {
         const tile_pos: rl.Vector2 = .{ .x = @mod(@as(f32, @floatFromInt(index)), map_size.x) * tile_size, .y = @floor(@as(f32, @floatFromInt(index)) / map_size.x) * tile_size };
-        const spike_texture_number = 40;
-        const milk_texture_number = 41;
         
         if(texture_number != -1) {
             data[variable_index] = Tile{
@@ -184,12 +183,13 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
             variable_index += 1;
         }
         
+        const special_tile_row = 5;
         const horiz_spike_buffer: f32 = 10;
         const vert_spike_buffer: f32 = 15;
                 
         switch (texture_number) {
-            spike_texture_number => objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }}) catch crsh.crash(.OUT_OF_MEMORY),
-            milk_texture_number => { 
+            special_tile_row * 8 => objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }}) catch crsh.crash(.OUT_OF_MEMORY),
+            special_tile_row * 8 + 1 => { 
                 objects.append(.{ .obj_type = .MILK, .rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size } }) catch crsh.crash(.OUT_OF_MEMORY); 
                 milk_poses.append(variable_index) catch crsh.crash(.OUT_OF_MEMORY);
                 lights.append(.{ .pos = .{ .x = tile_pos.x + tile_size / 2, .y = tile_pos.y + tile_size / 2 }, .radius = 50, .intensity = 0.5, .color = .blue }) catch crsh.crash(.OUT_OF_MEMORY);
@@ -212,22 +212,18 @@ pub fn loadMapEx(path: []const u8, player_spawn_pos: rl.Vector2, enemy_spawn_pos
     return map;
 }
 
-pub fn loadTileAtlas() void {
+pub fn initTileAtlas() void {
     tile_atlas = TileAtlas{
-        .texture = rl.loadTexture("res/sprite/map_atlas.png") catch crsh.crash(.RAYLIB_ERROR),
+        .texture = res.tile_atlas_texture,
         .atlas_tile_size = 32,
         .atlas_width = 8
     };
 }
 
-pub fn unloadTileAtlas() void {
-    rl.unloadTexture(tile_atlas.texture);
-}
-
 pub fn initMaps() void {
-    const map_amount = 3;
+    const map_amount = 4;
     var map_list = std.array_list.Managed(Map).init(main.allocator);
-    for(0..map_amount) |index| map_list.append(loadMap(std.fmt.allocPrintSentinel(main.allocator, "res/data/{d}.json", .{index + 1}, 0) catch crsh.crash(.OUT_OF_MEMORY), index) catch crsh.crash(.MAP_ERROR )) catch crsh.crash(.OUT_OF_MEMORY);
+    for(0..map_amount) |index| map_list.append(loadMap(std.fmt.allocPrintSentinel(main.allocator, "res/map/{d}.json", .{index + 1}, 0) catch crsh.crash(.OUT_OF_MEMORY), index) catch crsh.crash(.MAP_ERROR )) catch crsh.crash(.OUT_OF_MEMORY);
     maps = map_list.toOwnedSlice() catch crsh.crash(.OUT_OF_MEMORY);
 }
 

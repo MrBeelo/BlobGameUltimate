@@ -6,6 +6,7 @@ const ti = @import("timer.zig");
 const sta = @import("stars.zig");
 const crsh = @import("crash.zig");
 const txt = @import("text.zig");
+const res = @import("resources.zig");
 
 pub const BackgroundType = enum {
     MM,
@@ -17,7 +18,7 @@ pub const BackgroundType = enum {
     BBUF
 };
 
-var mm_blob_strip: rl.Texture2D = undefined;
+
 var mm_blob_strip_timer: ti.Timer = .{ .auto_start = true, .duration = 1, .repeat = true };
 
 const MMBlobStrip = struct {
@@ -31,7 +32,7 @@ const MMBlobStrip = struct {
     }
     
     pub fn draw(self: *MMBlobStrip) void {
-        rl.drawTexturePro(mm_blob_strip, .{ .x = 0, .y = 0, .width = 64, .height = 1024 }, .{ .x = 128 * @as(f32, @floatFromInt(self.index)), .y = -self.y_offset * 32 - 64, .width = 128, .height = 2048 }, .{ .x = 0, .y = 0 }, 0, .{ .r = 50, .g = 50, .b = 50, .a = 255 });
+        rl.drawTexturePro(res.mm_blob_strip, .{ .x = 0, .y = 0, .width = 64, .height = 1024 }, .{ .x = 128 * @as(f32, @floatFromInt(self.index)), .y = -self.y_offset * 32 - 64, .width = 128, .height = 2048 }, .{ .x = 0, .y = 0 }, 0, .{ .r = 50, .g = 50, .b = 50, .a = 255 });
     }
 };
 
@@ -42,8 +43,6 @@ pub fn newStripArray(len: usize) [len]MMBlobStrip {
     return strip_array;
 }
 
-var zig_logo: rl.Texture2D = undefined;
-var raylib_logo: rl.Texture2D = undefined;
 pub var splash_text_index: i32 = 0;
 
 pub const MMParams = struct {
@@ -55,8 +54,8 @@ pub const MMParams = struct {
     pub fn draw(self: *MMParams) void {
         for(&self.strips) |*strip| strip.draw();
         if(main.game_state == .MAIN) {
-            rl.drawTexture(raylib_logo, @intFromFloat(scr.sim_size.x - @as(f32, @floatFromInt(raylib_logo.width)) - scr.ui_buffer), @intFromFloat(scr.sim_size.y - @as(f32, @floatFromInt(raylib_logo.height)) - scr.ui_buffer), .white);
-            rl.drawTexture(zig_logo, @intFromFloat(scr.sim_size.x - @as(f32, @floatFromInt(raylib_logo.width)) - @as(f32, @floatFromInt(zig_logo.width)) - scr.ui_buffer * 2 ), @intFromFloat(scr.sim_size.y - @as(f32, @floatFromInt(raylib_logo.height)) - scr.ui_buffer), .white);
+            rl.drawTexture(res.raylib_logo, @intFromFloat(scr.sim_size.x - @as(f32, @floatFromInt(res.raylib_logo.width)) - scr.ui_buffer), @intFromFloat(scr.sim_size.y - @as(f32, @floatFromInt(res.raylib_logo.height)) - scr.ui_buffer), .white);
+            rl.drawTexture(res.zig_logo, @intFromFloat(scr.sim_size.x - @as(f32, @floatFromInt(res.raylib_logo.width)) - @as(f32, @floatFromInt(res.zig_logo.width)) - scr.ui_buffer * 2 ), @intFromFloat(scr.sim_size.y - @as(f32, @floatFromInt(res.raylib_logo.height)) - scr.ui_buffer), .white);
             
             const text = switch (splash_text_index) {
                 0 => "Made with Hate by MrBeelo",
@@ -224,16 +223,7 @@ pub fn getBackgroundType() BackgroundType {
     }
 }
 
-pub fn loadBackgrounds() void {
+pub fn initBackgrounds() void {
     splash_text_index = rl.getRandomValue(0, 19);
-    mm_blob_strip = rl.loadTexture("res/sprite/blob_strip.png") catch crsh.crash(.RAYLIB_ERROR);
-    zig_logo = rl.loadTexture("res/sprite/zig_logo.png") catch crsh.crash(.RAYLIB_ERROR);
-    raylib_logo = rl.loadTexture("res/sprite/raylib_logo.png") catch crsh.crash(.RAYLIB_ERROR);
     bbu1.sun_moon_timer.init();
-}
-
-pub fn unloadBackgrounds() void {
-    rl.unloadTexture(mm_blob_strip);
-    rl.unloadTexture(zig_logo);
-    rl.unloadTexture(raylib_logo);
 }

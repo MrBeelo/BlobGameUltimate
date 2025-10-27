@@ -10,9 +10,8 @@ const men = @import("menu.zig");
 const map = @import("map.zig");
 const txt = @import("text.zig");
 const sw = @import("sword.zig");
+const res = @import("resources.zig");
 
-var player_atlas: rl.Texture2D = undefined;
-var tinted_player_atlas: rl.Texture2D = undefined;
 pub const def_player_size = rl.Vector2{ .x = 40, .y = 60 };
 pub const base_player_health: f32 = 100;
 
@@ -44,7 +43,7 @@ pub const Player = struct {
     }
     
     pub fn draw(self: *Player) void {
-        const texture = if(self.data.hit_timer.active) tinted_player_atlas else player_atlas;
+        const texture = if(self.data.hit_timer.active) res.tinted_player_atlas else res.player_atlas;
         const flip: f32 = if(self.data.last_direction_right) 1 else -1;
         rl.drawTexturePro(texture, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
             self.data.getRect(), .zero(), 0, self.data.color);
@@ -78,15 +77,6 @@ pub const Player = struct {
         self.data.is_player = true;
     }
 };
-
-pub fn loadPlayer() void {
-    player_atlas = rl.loadTexture("res/sprite/player_atlas.png") catch crsh.crash(.RAYLIB_ERROR);
-    tinted_player_atlas = main.fullyTintTexture(player_atlas, .white);
-}
-
-pub fn unloadPlayer() void {
-    defer rl.unloadTexture(player_atlas);
-}
 
 pub fn newPlayer() Player {
     var player = Player{ .data = .{ .pos = .{ .x = 10, .y = 10 }, .size = def_player_size, .speed = 3.5, .health = base_player_health } }; //THIS SUCKS! MAKE CUSTOM SPAWN POINTSD

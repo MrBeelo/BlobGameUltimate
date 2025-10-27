@@ -9,6 +9,7 @@ const map = @import("map.zig");
 const ti = @import("timer.zig");
 const bg = @import("background.zig");
 const int = @import("intro.zig");
+const res = @import("resources.zig");
 
 pub const GameState = enum {
     PLAYING,
@@ -22,7 +23,6 @@ pub const GameState = enum {
 pub var map_transition_timer = ti.Timer{ .duration = 1 };
 pub var map_transition_map_changed = false;
 pub var map_transition_color: rl.Color = .white;
-var blob_logo: rl.Texture2D = undefined;
 
 pub const ButtonType = union(enum) {
     change_game_state: GameState,
@@ -179,7 +179,7 @@ pub fn initMenus() void {
                 createButton("EXIT", .{ .change_game_state = .EXIT }, 1)
             }), 
             .should_draw_texture = true,
-            .texture = blob_logo
+            .texture = res.blob_logo
         },
         
         // PAUSED
@@ -203,14 +203,6 @@ pub fn initMenus() void {
         // INTRO
         Menu{ .buttons = main.mutateSlice(Button, &[_]Button{}), .is_intro_menu = true },
     };
-}
-
-pub fn loadMenus() void {
-    blob_logo = rl.loadTexture("res/sprite/blob_logo.png") catch crsh.crash(.RAYLIB_ERROR);
-}
-
-pub fn unloadMenus() void {
-    rl.unloadTexture(blob_logo);
 }
 
 pub fn updateMenus() void {
