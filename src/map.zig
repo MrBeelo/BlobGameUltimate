@@ -171,6 +171,7 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
     var variable_index: usize = 0;
     for(shifted_data_array.items, 0..) |texture_number, index| {
         const tile_pos: rl.Vector2 = .{ .x = @mod(@as(f32, @floatFromInt(index)), map_size.x) * tile_size, .y = @floor(@as(f32, @floatFromInt(index)) / map_size.x) * tile_size };
+        const spike_texture_number = 40;
         const milk_texture_number = 41;
         
         if(texture_number != -1) {
@@ -187,8 +188,12 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
         const vert_spike_buffer: f32 = 15;
                 
         switch (texture_number) {
-            40 => objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }}) catch crsh.crash(.OUT_OF_MEMORY),
-            milk_texture_number => { objects.append(.{ .obj_type = .MILK, .rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size } }) catch crsh.crash(.OUT_OF_MEMORY); milk_poses.append(variable_index) catch crsh.crash(.OUT_OF_MEMORY); },
+            spike_texture_number => objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = tile_pos.x + horiz_spike_buffer, .y = tile_pos.y + vert_spike_buffer, .width = tile_size - horiz_spike_buffer * 2, .height = tile_size - vert_spike_buffer }}) catch crsh.crash(.OUT_OF_MEMORY),
+            milk_texture_number => { 
+                objects.append(.{ .obj_type = .MILK, .rect = .{ .x = tile_pos.x, .y = tile_pos.y, .width = tile_size, .height = tile_size } }) catch crsh.crash(.OUT_OF_MEMORY); 
+                milk_poses.append(variable_index) catch crsh.crash(.OUT_OF_MEMORY);
+                lights.append(.{ .pos = .{ .x = tile_pos.x + tile_size / 2, .y = tile_pos.y + tile_size / 2 }, .radius = 50, .intensity = 0.5, .color = .blue }) catch crsh.crash(.OUT_OF_MEMORY);
+            },
             else => {}
         }
     }
