@@ -221,7 +221,7 @@ pub fn initTileAtlas() void {
 }
 
 pub fn initMaps() void {
-    const map_amount = 4;
+    const map_amount = 6;
     var map_list = std.array_list.Managed(Map).init(main.allocator);
     for(0..map_amount) |index| map_list.append(loadMap(std.fmt.allocPrintSentinel(main.allocator, "res/map/{d}.json", .{index + 1}, 0) catch crsh.crash(.OUT_OF_MEMORY), index) catch crsh.crash(.MAP_ERROR )) catch crsh.crash(.OUT_OF_MEMORY);
     maps = map_list.toOwnedSlice() catch crsh.crash(.OUT_OF_MEMORY);
