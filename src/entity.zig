@@ -7,6 +7,7 @@ const obj = @import("object.zig");
 const sav = @import("savefile.zig");
 const crsh = @import("crash.zig");
 const pop = @import("popup.zig");
+const dia = @import("dialog.zig");
 
 pub const CollisionDirectionX = enum {
     LEFT,
@@ -47,6 +48,8 @@ pub const EntityData = struct {
     is_being_knocked: bool = false,
     is_player: bool = false,
     can_walljump: bool = false,
+    dialog_collided: bool = false,
+    parsed_dialog: ?dia.Dialog = null,
     
     pub fn update(self: *EntityData) void {
         if(self.vel.y < 15) self.vel.y += 0.5 * main.dt;
@@ -70,6 +73,10 @@ pub const EntityData = struct {
         self.pos.x = std.math.clamp(self.pos.x, -self.size.x + 5, map.maps[main.savefile.current_map].map_size.x * tilesize - 5);
         
         if(self.pos.y > map.maps[main.savefile.current_map].map_size.y * tilesize) self.health = 0;
+    }
+    
+    pub fn drawDialog(self: *EntityData) void {
+        if(self.dialog_collided and self.parsed_dialog != null) self.parsed_dialog.?.draw(); 
     }
     
     pub fn moveLeft(self: *EntityData) void {
@@ -155,6 +162,7 @@ pub const EntityData = struct {
     
     pub fn manageCollisions(self: *EntityData, horizontal: bool) void {
         if(horizontal) self.collisionsX = [_]bool{ false } ** 2 else self.collisionsY = [_]bool{ false } ** 2;
+        self.dialog_collided = false;
         
         for (map.maps[main.savefile.current_map].objects) |*object| {
             if(!object.is_disabled) switch (object.obj_type) {
@@ -173,6 +181,18 @@ pub const EntityData = struct {
                             sav.saveSaveFile(&main.savefile) catch crsh.crash(.SAVE_ERROR);
                             pop.triggerMilkPopup();
                         }
+                    }
+                },
+                .DIALOG => {
+                    if(self.is_player) {
+                        if(self.colliding(object.rect)) {
+                            object.updateDialog();
+                            self.dialog_collided = true;
+                            self.parsed_dialog = object.dialog;
+                        } else if(object.dialog != null) {
+                            object.dialog.?.current_drawn_characters = 0;
+                            object.dialog.?.part.line1_active = true;
+                        }   
                     }
                 }
             };

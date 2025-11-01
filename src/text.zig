@@ -31,12 +31,17 @@ fn getFontSpacing(font_name: FontName) f32 {
     };
 }
 
-pub fn drawCustomText(text: [:0]const u8, font_name: FontName, font_type: FontType, font_size: f32, pos: rl.Vector2, color: rl.Color) void {
-    const font = getFont(font_name, font_type);
-    rl.drawTextEx(font, text, pos, font_size, getFontSpacing(font_name), color);
+fn nullTerminate(text: []const u8) [:0]const u8 {
+    const text_z = main.allocator.dupeZ(u8, text) catch crsh.crash(.OUT_OF_MEMORY);
+    return text_z;
 }
 
-pub fn measureCustomText(text: [:0]const u8, font_name: FontName, font_type: FontType, font_size: f32) rl.Vector2 {
+pub fn drawCustomText(text: []const u8, font_name: FontName, font_type: FontType, font_size: f32, pos: rl.Vector2, color: rl.Color) void {
     const font = getFont(font_name, font_type);
-    return rl.measureTextEx(font, text, font_size, getFontSpacing(font_name));
+    rl.drawTextEx(font, nullTerminate(text), pos, font_size, getFontSpacing(font_name), color);
+}
+
+pub fn measureCustomText(text: []const u8, font_name: FontName, font_type: FontType, font_size: f32) rl.Vector2 {
+    const font = getFont(font_name, font_type);
+    return rl.measureTextEx(font, nullTerminate(text), font_size, getFontSpacing(font_name));
 }

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="106" height="34" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="32">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="106" height="34" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="36">
+ <editorsettings>
+  <export target="6.json" format="json"/>
+ </editorsettings>
  <tileset firstgid="1" source="tileset.tsx"/>
  <layer id="1" name="tiles" width="106" height="34">
   <data encoding="csv">
@@ -79,5 +82,11 @@
   <object id="25" name="shrine" x="2944" y="768" width="128" height="64"/>
   <object id="30" x="776" y="840" width="16" height="88"/>
   <object id="31" x="2312" y="648" width="16" height="88"/>
+  <object id="35" name="dialog" x="2688" y="832" width="64" height="32">
+   <properties>
+    <property name="line1" value="Behold..."/>
+    <property name="line2" value="The Great Sword of Death"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

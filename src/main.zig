@@ -70,6 +70,7 @@ pub fn drawGame() void {
     
     player.drawHealthBar();
     if(pop.milk_popup_timer.active) pop.drawMilkPopup();
+    player.data.drawDialog();
 }
 
 pub fn main() void {

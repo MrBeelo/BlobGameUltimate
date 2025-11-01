@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="78" height="34" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="18">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="78" height="34" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="19">
  <tileset firstgid="1" source="tileset.tsx"/>
  <layer id="1" name="tiles" width="78" height="34">
   <data encoding="csv">
@@ -68,6 +68,11 @@
   </object>
   <object id="17" name="circle" x="2144" y="608">
    <point/>
+  </object>
+  <object id="18" name="dialog" x="480" y="736" width="64" height="32">
+   <properties>
+    <property name="line" value="WELCOME TO BLOBLAND!"/>
+   </properties>
   </object>
  </objectgroup>
 </map>

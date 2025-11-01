@@ -11,6 +11,7 @@ const pl = @import("player.zig");
 const sav = @import("savefile.zig");
 const lit = @import("light.zig");
 const res = @import("resources.zig");
+const dia = @import("dialog.zig");
 
 pub const TileAtlas = struct {
     texture: rl.Texture2D,
@@ -116,14 +117,16 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
                 const width: f32 = @floatFromInt(tiled_object_object.get("width").?.integer);
                 const height: f32 = @floatFromInt(tiled_object_object.get("height").?.integer);
                 
-                if(eql(u8, tiled_object_name, "") or eql(u8, tiled_object_name, "solid")) objects.append(.{ .obj_type = .SOLID, .rect = .{ .x = x, .y = y, .width = width, .height = height } }) catch crsh.crash(.OUT_OF_MEMORY);
-                if(eql(u8, tiled_object_name, "hazard")) objects.append(.{ .obj_type = .HAZARD, .rect = .{ .x = x, .y = y, .width = width, .height = height } }) catch crsh.crash(.OUT_OF_MEMORY);
-                if(eql(u8, tiled_object_name, "player")) player_spawn_pos = .{ .x = x, .y = y };
-                if(eql(u8, tiled_object_name, "circle")) enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = .{ .x = x, .y = y } }) catch crsh.crash(.OUT_OF_MEMORY);
-                if(eql(u8, tiled_object_name, "triangle")) enemy_spawn_poses.append(.{ .enemy_type = .TRIANGLE, .spawn_pos = .{ .x = x, .y = y } }) catch crsh.crash(.OUT_OF_MEMORY);
+                const pos = rl.Vector2{ .x = x, .y = y };
+                const rect = rl.Rectangle{ .x = x, .y = y, .width = width, .height = height };
+                
+                if(eql(u8, tiled_object_name, "") or eql(u8, tiled_object_name, "solid")) objects.append(.{ .obj_type = .SOLID, .rect = rect }) catch crsh.crash(.OUT_OF_MEMORY);
+                if(eql(u8, tiled_object_name, "hazard")) objects.append(.{ .obj_type = .HAZARD, .rect = rect }) catch crsh.crash(.OUT_OF_MEMORY);
+                if(eql(u8, tiled_object_name, "player")) player_spawn_pos = pos;
+                if(eql(u8, tiled_object_name, "circle")) enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = pos }) catch crsh.crash(.OUT_OF_MEMORY);
+                if(eql(u8, tiled_object_name, "triangle")) enemy_spawn_poses.append(.{ .enemy_type = .TRIANGLE, .spawn_pos = pos }) catch crsh.crash(.OUT_OF_MEMORY);
                 if(eql(u8, tiled_object_name, "light")) {
                     const properties = tiled_object_object.get("properties").?.array.items;
-                    const pos = rl.Vector2{ .x = x, .y = y };
                     var radius: f32 = 50;
                     var intensity: f32 = 1;
                     var color_string: []const u8 = "white";
@@ -147,6 +150,26 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
                     if(eql(u8, color_string, "blue")) color = .blue;
                     
                     lights.append(.{ .pos = pos, .radius = radius, .intensity = intensity, .color = color }) catch crsh.crash(.OUT_OF_MEMORY);
+                }
+                if(eql(u8, tiled_object_name, "dialog")) {
+                    const properties = tiled_object_object.get("properties").?.array.items;
+                    var line1: []const u8 = "TEST";
+                    var line2: ?[]const u8 = null;
+                    
+                    for(properties) |property| {
+                        const property_object = property.object;
+                        const property_name = property_object.get("name").?.string;
+                        const property_value = property_object.get("value").?;
+                        
+                        if(eql(u8, property_name, "line") or eql(u8, property_name, "line1")) line1 = main.allocator.dupe(u8, property_value.string) catch crsh.crash(.OUT_OF_MEMORY);
+                        if(eql(u8, property_name, "line2")) line2 = main.allocator.dupe(u8, property_value.string) catch crsh.crash(.OUT_OF_MEMORY);
+                    }
+                    
+                    if(line2 == null) {
+                        objects.append(.{ .rect = rect, .obj_type = .DIALOG, .dialog = dia.singleLineDialog(line1) }) catch crsh.crash(.OUT_OF_MEMORY);
+                    } else {
+                        objects.append(.{ .rect = rect, .obj_type = .DIALOG, .dialog = dia.doubleLineDialog(line1, line2 orelse unreachable) }) catch crsh.crash(.OUT_OF_MEMORY);
+                    }
                 }
             }
         }

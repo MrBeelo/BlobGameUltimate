@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "6.tmx",
+    "activeFile": "5.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -45,19 +45,22 @@
             }
         },
         "5.tmx": {
-            "scale": 0.5,
-            "selectedLayer": 0,
+            "scale": 0.25,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 1379,
-                "y": 543
+                "x": -312,
+                "y": 1390
             }
         },
         "6.tmx": {
-            "scale": 0.75,
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1757.3333333333333,
-                "y": 819.3333333333333
+                "x": 1696.25,
+                "y": 544.25
             }
         },
         "tileset-bb12.tsx": {
@@ -94,8 +97,8 @@
     "recentFiles": [
         "4.tmx",
         "tileset.tsx",
-        "5.tmx",
         "6.tmx",
+        "5.tmx",
         "tileset-bb12.tsx",
         "tileset-bbu1.tsx",
         "tileset-global.tsx",
