@@ -155,6 +155,7 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
                     const properties = tiled_object_object.get("properties").?.array.items;
                     var line1: []const u8 = "TEST";
                     var line2: ?[]const u8 = null;
+                    var dialog_type_string: []const u8 = "blank";
                     
                     for(properties) |property| {
                         const property_object = property.object;
@@ -163,12 +164,18 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
                         
                         if(eql(u8, property_name, "line") or eql(u8, property_name, "line1")) line1 = main.allocator.dupe(u8, property_value.string) catch crsh.crash(.OUT_OF_MEMORY);
                         if(eql(u8, property_name, "line2")) line2 = main.allocator.dupe(u8, property_value.string) catch crsh.crash(.OUT_OF_MEMORY);
+                        if(eql(u8, property_name, "type")) dialog_type_string = main.allocator.dupe(u8, property_value.string) catch crsh.crash(.OUT_OF_MEMORY);
                     }
                     
+                    var dialog_type: dia.DialogType = .BLANK;
+                    
+                    if(eql(u8, dialog_type_string, "blank")) dialog_type = .BLANK;
+                    if(eql(u8, dialog_type_string, "sign1")) dialog_type = .SIGN1;
+                    
                     if(line2 == null) {
-                        objects.append(.{ .rect = rect, .obj_type = .DIALOG, .dialog = dia.singleLineDialog(line1) }) catch crsh.crash(.OUT_OF_MEMORY);
+                        objects.append(.{ .rect = rect, .obj_type = .DIALOG, .dialog = dia.singleLineDialog(line1, dialog_type) }) catch crsh.crash(.OUT_OF_MEMORY);
                     } else {
-                        objects.append(.{ .rect = rect, .obj_type = .DIALOG, .dialog = dia.doubleLineDialog(line1, line2 orelse unreachable) }) catch crsh.crash(.OUT_OF_MEMORY);
+                        objects.append(.{ .rect = rect, .obj_type = .DIALOG, .dialog = dia.doubleLineDialog(line1, line2 orelse unreachable, dialog_type) }) catch crsh.crash(.OUT_OF_MEMORY);
                     }
                 }
             }

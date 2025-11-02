@@ -254,6 +254,11 @@
                          "name":"line",
                          "type":"string",
                          "value":"WELCOME TO BLOBLAND!"
+                        }, 
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"sign1"
                         }],
                  "rotation":0,
                  "type":"",

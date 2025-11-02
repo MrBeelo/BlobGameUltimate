@@ -369,6 +369,11 @@
                          "name":"line2",
                          "type":"string",
                          "value":"The Great Sword of Death"
+                        }, 
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"sign1"
                         }],
                  "rotation":0,
                  "type":"",

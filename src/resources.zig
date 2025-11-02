@@ -29,36 +29,48 @@ pub var dancing_script: rl.Font = undefined;
 
 pub var tile_atlas_texture: rl.Texture2D = undefined;
 
-fn crash() noreturn {
-    crash();
+pub var sign1: rl.Texture2D = undefined;
+
+fn loadT(file_path: [:0]const u8) rl.Texture {
+    return rl.loadTexture(file_path) catch crsh.crash(.RAYLIB_ERROR);
+}
+
+fn loadS(file_path: [:0]const u8) rl.Shader {
+    return rl.loadShader(null, file_path) catch crsh.crash(.RAYLIB_ERROR);
+}
+
+fn loadF(file_path: [:0]const u8) rl.Font {
+    return rl.loadFontEx(file_path, 200, null) catch crsh.crash(.RAYLIB_ERROR);
 }
 
 pub fn loadResources() void {
-    mm_blob_strip = rl.loadTexture("res/sprite/menu/blob_strip.png") catch crash();
-    zig_logo = rl.loadTexture("res/sprite/menu/zig_logo.png") catch crash();
-    raylib_logo = rl.loadTexture("res/sprite/menu/raylib_logo.png") catch crash();
+    mm_blob_strip = loadT("res/sprite/menu/blob_strip.png");
+    zig_logo = loadT("res/sprite/menu/zig_logo.png");
+    raylib_logo = loadT("res/sprite/menu/raylib_logo.png");
     
-    circle_atlas = rl.loadTexture("res/sprite/entity/circle_atlas.png") catch crash();
-    triangle_atlas = rl.loadTexture("res/sprite/entity/triangle_atlas.png") catch crash();
+    circle_atlas = loadT("res/sprite/entity/circle_atlas.png");
+    triangle_atlas = loadT("res/sprite/entity/triangle_atlas.png");
     
-    cutscene_image_1 = rl.loadTexture("res/sprite/cutscene/blob_cutscene_1.png") catch crash();
-    cutscene_image_2 = rl.loadTexture("res/sprite/cutscene/blob_cutscene_2.png") catch crash();
-    cutscene_image_3 = rl.loadTexture("res/sprite/cutscene/blob_cutscene_3.png") catch crash();
+    cutscene_image_1 = loadT("res/sprite/cutscene/blob_cutscene_1.png");
+    cutscene_image_2 = loadT("res/sprite/cutscene/blob_cutscene_2.png");
+    cutscene_image_3 = loadT("res/sprite/cutscene/blob_cutscene_3.png");
     
-    blob_logo = rl.loadTexture("res/sprite/menu/blob_logo.png") catch crash();
+    blob_logo = loadT("res/sprite/menu/blob_logo.png");
     
-    player_atlas = rl.loadTexture("res/sprite/entity/player_atlas.png") catch crash();
+    player_atlas = loadT("res/sprite/entity/player_atlas.png");
     tinted_player_atlas = main.fullyTintTexture(player_atlas, .white);
     
-    blur_shader = rl.loadShader(null, "res/shader/blur.fs") catch crash();
+    blur_shader = loadS("res/shader/blur.fs");
     
-    sword_texture = rl.loadTexture("res/sprite/entity/sword.png") catch crash();
+    sword_texture = loadT("res/sprite/entity/sword.png");
     
-    elevatia = rl.loadFontEx("res/font/elevatia.ttf", 100, null) catch crash();
-    elevatia_italic = rl.loadFontEx("res/font/elevatia_italic.ttf", 100, null) catch crash();
-    dancing_script = rl.loadFontEx("res/font/dancing_script.ttf", 200, null) catch crash();
+    elevatia = loadF("res/font/elevatia.ttf");
+    elevatia_italic = loadF("res/font/elevatia_italic.ttf");
+    dancing_script = loadF("res/font/dancing_script.ttf");
     
-    tile_atlas_texture = rl.loadTexture("res/sprite/tileset.png") catch crash();
+    tile_atlas_texture = loadT("res/sprite/tileset.png");
+    
+    sign1 = loadT("res/sprite/ui/sign1.png");
 }
 
 pub fn unloadResources() void {
@@ -86,4 +98,6 @@ pub fn unloadResources() void {
     rl.unloadFont(dancing_script);
     
     rl.unloadTexture(tile_atlas_texture);
+    
+    rl.unloadTexture(sign1);
 }

@@ -5,6 +5,7 @@ const ti = @import("timer.zig");
 const scr = @import("screen.zig");
 const txt = @import("text.zig");
 const crsh = @import("crash.zig");
+const res = @import("resources.zig");
 
 const DialogPart = struct {
     line1: []const u8 = "PLACEHOLDER",
@@ -14,9 +15,15 @@ const DialogPart = struct {
     line1_active: bool = true
 };
 
+pub const DialogType = enum {
+    BLANK,
+    SIGN1
+};
+
 pub const Dialog = struct {
     part: DialogPart,
     timer: ti.Timer,
+    dialog_type: DialogType = .BLANK,
     current_drawn_characters: usize = 0,
     
     pub fn update(self: *Dialog) void {
@@ -41,8 +48,16 @@ pub const Dialog = struct {
         const part: DialogPart = self.part;
         
         const rect = rl.Rectangle{ .x = scr.sim_size.x / 4, .y = 100, .width = scr.sim_size.x / 2, .height = 300 };
-        rl.drawRectangleRec(rect, .white);
-        rl.drawRectangleLinesEx(rect, 5, .black);
+        
+        switch (self.dialog_type) {
+            .BLANK => {
+                rl.drawRectangleRec(rect, .white);
+                rl.drawRectangleLinesEx(rect, 5, .black);
+            },
+            .SIGN1 => {
+                rl.drawTexture(res.sign1, @intFromFloat(scr.sim_size.x / 4), 100, .white);
+            }
+        }
         
         if(part.line1_active) {
             const line: []const u8 = part.line1;
@@ -84,17 +99,17 @@ fn calculateTimerDuration(text_length: i32) f32 {
     return @as(f32, @floatFromInt(text_length)) / 350;
 }
 
-pub fn singleLineDialog(line: []const u8) Dialog {
+pub fn singleLineDialog(line: []const u8, dialog_type: DialogType) Dialog {
     const part = DialogPart{ .line1 = line, .time = calculateTimerDuration(getPartTextLength(line, null, null)) };
-    return Dialog{ .part = part, .timer = .{ .duration = part.time, .auto_start = true, .repeat = true } };
+    return Dialog{ .part = part, .timer = .{ .duration = part.time, .auto_start = true, .repeat = true }, .dialog_type = dialog_type };
 }
 
-pub fn doubleLineDialog(line1: []const u8, line2: []const u8) Dialog {
+pub fn doubleLineDialog(line1: []const u8, line2: []const u8, dialog_type: DialogType) Dialog {
     const combined: []const u8 = std.mem.concat(main.allocator, u8, &[_][]const u8{
         line1,
         line2,
     }) catch crsh.crash(.OUT_OF_MEMORY);
     defer main.allocator.free(combined);
     const part = DialogPart{ .line1 = line1, .line2 = line2, .combined = combined, .time = calculateTimerDuration(getPartTextLength(line1, line2, combined)) };
-    return Dialog{ .part = part, .timer = .{ .duration = part.time, .auto_start = true, .repeat = true } };
+    return Dialog{ .part = part, .timer = .{ .duration = part.time, .auto_start = true, .repeat = true }, .dialog_type = dialog_type };
 }

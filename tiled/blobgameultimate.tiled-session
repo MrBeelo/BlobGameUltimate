@@ -56,11 +56,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 2,
+            "scale": 4,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1696.25,
-                "y": 544.25
+                "x": 2726,
+                "y": 810.875
             }
         },
         "tileset-bb12.tsx": {
