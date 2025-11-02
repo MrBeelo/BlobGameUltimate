@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "5.tmx",
+    "activeFile": "6.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -56,11 +56,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 4,
+            "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1696.125,
-                "y": 544.125
+                "x": 3042,
+                "y": 798.8333333333333
             }
         },
         "tileset-bb12.tsx": {
@@ -97,8 +97,8 @@
     "recentFiles": [
         "4.tmx",
         "tileset.tsx",
-        "6.tmx",
         "5.tmx",
+        "6.tmx",
         "tileset-bb12.tsx",
         "tileset-bbu1.tsx",
         "tileset-global.tsx",

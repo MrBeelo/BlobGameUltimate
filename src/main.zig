@@ -18,6 +18,7 @@ const sha = @import("shake.zig");
 const pop = @import("popup.zig");
 const lit = @import("light.zig");
 const res = @import("resources.zig");
+const inv = @import("inventory.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -71,6 +72,7 @@ pub fn drawGame() void {
     player.drawHealthBar();
     if(pop.milk_popup_timer.active) pop.drawMilkPopup();
     player.data.drawDialog();
+    inv.drawInventory();
 }
 
 pub fn main() void {
