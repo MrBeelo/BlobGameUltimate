@@ -31,6 +31,8 @@ pub var tile_atlas_texture: rl.Texture2D = undefined;
 
 pub var sign1: rl.Texture2D = undefined;
 
+pub var shrine: rl.Texture2D = undefined;
+
 fn loadT(file_path: [:0]const u8) rl.Texture {
     return rl.loadTexture(file_path) catch crsh.crash(.RAYLIB_ERROR);
 }
@@ -71,6 +73,8 @@ pub fn loadResources() void {
     tile_atlas_texture = loadT("res/sprite/tileset.png");
     
     sign1 = loadT("res/sprite/ui/sign1.png");
+    
+    shrine = loadT("res/sprite/sword_shrine.png");
 }
 
 pub fn unloadResources() void {
@@ -100,4 +104,6 @@ pub fn unloadResources() void {
     rl.unloadTexture(tile_atlas_texture);
     
     rl.unloadTexture(sign1);
+    
+    rl.unloadTexture(shrine);
 }

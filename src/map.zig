@@ -68,7 +68,10 @@ pub const Map = struct {
             }
         }
         
-        if(main.f3) for(self.objects) |*object| object.drawDebug();
+        for(self.objects) |*object| {
+            object.drawShrine();
+            if(main.f3) object.drawDebug();
+        }
     }
 };
 
@@ -178,6 +181,7 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
                         objects.append(.{ .rect = rect, .obj_type = .DIALOG, .dialog = dia.doubleLineDialog(line1, line2 orelse unreachable, dialog_type) }) catch crsh.crash(.OUT_OF_MEMORY);
                     }
                 }
+                if(eql(u8, tiled_object_name, "shrine")) objects.append(.{ .obj_type = .SHRINE, .rect = rect, .shrine_has_stone = true }) catch crsh.crash(.OUT_OF_MEMORY);
             }
         }
     }

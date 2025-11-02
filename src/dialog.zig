@@ -96,7 +96,8 @@ fn getTextMiddleXPos(line: []const u8) f32 {
 }
 
 fn calculateTimerDuration(text_length: i32) f32 {
-    return @as(f32, @floatFromInt(text_length)) / 350;
+    const length: f32 = @floatFromInt(text_length);
+    return 1 / (length / 1.7);
 }
 
 pub fn singleLineDialog(line: []const u8, dialog_type: DialogType) Dialog {

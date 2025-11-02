@@ -194,6 +194,15 @@ pub const EntityData = struct {
                             object.dialog.?.part.line1_active = true;
                         }   
                     }
+                },
+                .SHRINE => {
+                    if(self.is_player and self.colliding(object.rect) and object.shrine_has_stone != null) {
+                        if(self.vel.y < 0 and !main.savefile.has_sword and (object.shrine_has_stone orelse unreachable)) {
+                            object.shrine_has_stone = false;
+                            main.savefile.has_sword = true;
+                            sav.saveSaveFile(&main.savefile) catch crsh.crash(.SAVE_ERROR);
+                        } 
+                    }
                 }
             };
         }
