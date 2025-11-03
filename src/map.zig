@@ -126,8 +126,9 @@ pub fn loadMap(path: []const u8, id: usize) !Map {
                 if(eql(u8, tiled_object_name, "") or eql(u8, tiled_object_name, "solid")) objects.append(.{ .obj_type = .SOLID, .rect = rect }) catch crsh.crash(.OUT_OF_MEMORY);
                 if(eql(u8, tiled_object_name, "hazard")) objects.append(.{ .obj_type = .HAZARD, .rect = rect }) catch crsh.crash(.OUT_OF_MEMORY);
                 if(eql(u8, tiled_object_name, "player")) player_spawn_pos = pos;
-                if(eql(u8, tiled_object_name, "circle")) enemy_spawn_poses.append(.{ .enemy_type = .CIRCLE, .spawn_pos = pos }) catch crsh.crash(.OUT_OF_MEMORY);
-                if(eql(u8, tiled_object_name, "triangle")) enemy_spawn_poses.append(.{ .enemy_type = .TRIANGLE, .spawn_pos = pos }) catch crsh.crash(.OUT_OF_MEMORY);
+                if(eql(u8, tiled_object_name, "triangle1")) enemy_spawn_poses.append(.{ .enemy_type = .SIMPLE_TRIANGLE, .spawn_pos = pos }) catch crsh.crash(.OUT_OF_MEMORY);
+                if(eql(u8, tiled_object_name, "triangle2")) enemy_spawn_poses.append(.{ .enemy_type = .ENRAGED_TRIANGLE, .spawn_pos = pos }) catch crsh.crash(.OUT_OF_MEMORY);
+                if(eql(u8, tiled_object_name, "triangle3")) enemy_spawn_poses.append(.{ .enemy_type = .FLYING_TRIANGLE, .spawn_pos = pos }) catch crsh.crash(.OUT_OF_MEMORY);
                 if(eql(u8, tiled_object_name, "light")) {
                     const properties = tiled_object_object.get("properties").?.array.items;
                     var radius: f32 = 50;

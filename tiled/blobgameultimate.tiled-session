@@ -29,6 +29,9 @@
             }
         },
         "3.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
             "scale": 0.5,
             "selectedLayer": 1,
             "viewCenter": {
@@ -37,18 +40,24 @@
             }
         },
         "4.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
             "scale": 0.5317555147058823,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1088.846253564947,
+                "x": 460.7380520266182,
                 "y": 542.5425633048137
             }
         },
         "5.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
             "scale": 0.75,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 2401.333333333333,
+                "x": 613.3333333333333,
                 "y": 455.33333333333326
             }
         },
@@ -56,11 +65,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3,
+            "scale": 0.33,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 3042,
-                "y": 798.8333333333333
+                "x": 1224.2424242424242,
+                "y": 1186.3636363636363
             }
         },
         "tileset-bb12.tsx": {
@@ -90,7 +99,8 @@
         "4.tmx",
         "tileset.tsx",
         "5.tmx",
-        "6.tmx"
+        "6.tmx",
+        "3.tmx"
     ],
     "project": "blobgameultimate.tiled-project",
     "property.type": "string",
@@ -98,11 +108,11 @@
         "4.tmx",
         "tileset.tsx",
         "5.tmx",
+        "3.tmx",
         "6.tmx",
         "tileset-bb12.tsx",
         "tileset-bbu1.tsx",
         "tileset-global.tsx",
-        "3.tmx",
         "2.tmx",
         "1.tmx"
     ],

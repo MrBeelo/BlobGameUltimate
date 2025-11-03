@@ -64,19 +64,19 @@
   <object id="19" name="player" x="32" y="736">
    <point/>
   </object>
-  <object id="20" name="triangle" x="352" y="704">
+  <object id="20" name="triangle2" x="352" y="704">
    <point/>
   </object>
-  <object id="21" name="triangle" x="640" y="736">
+  <object id="21" name="triangle2" x="640" y="736">
    <point/>
   </object>
-  <object id="22" name="circle" x="1792" y="704">
+  <object id="22" name="triangle1" x="1792" y="704">
    <point/>
   </object>
-  <object id="23" name="triangle" x="2016" y="640">
+  <object id="23" name="triangle2" x="2016" y="640">
    <point/>
   </object>
-  <object id="24" name="circle" x="2112" y="640">
+  <object id="24" name="triangle1" x="2112" y="640">
    <point/>
   </object>
   <object id="25" name="shrine" x="2944" y="768" width="128" height="64"/>

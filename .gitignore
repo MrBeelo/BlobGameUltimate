@@ -1,2 +1,4 @@
 .zig-cache
 zig-out
+savefile.json
+settings.json

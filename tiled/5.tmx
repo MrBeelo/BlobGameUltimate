@@ -54,19 +54,19 @@
   <object id="12" name="player" x="32" y="736">
    <point/>
   </object>
-  <object id="13" name="triangle" x="448" y="640">
+  <object id="13" name="triangle2" x="448" y="640">
    <point/>
   </object>
-  <object id="14" name="triangle" x="512" y="640">
+  <object id="14" name="triangle2" x="512" y="640">
    <point/>
   </object>
-  <object id="15" name="triangle" x="1216" y="768">
+  <object id="15" name="triangle2" x="1216" y="768">
    <point/>
   </object>
-  <object id="16" name="circle" x="1408" y="768">
+  <object id="16" name="triangle1" x="1408" y="768">
    <point/>
   </object>
-  <object id="17" name="circle" x="2144" y="608">
+  <object id="17" name="triangle1" x="2144" y="608">
    <point/>
   </object>
   <object id="18" name="dialog" x="480" y="736" width="64" height="32">

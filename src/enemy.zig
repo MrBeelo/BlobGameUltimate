@@ -10,104 +10,6 @@ const res = @import("resources.zig");
 
 pub var enemies: std.array_list.Managed(Enemy) = undefined;
 
-pub const EnemyType = enum {
-    CIRCLE,
-    TRIANGLE,
-    TRIANGLE_BOSS
-};
-
-pub const Enemy = struct {
-    data: ent.EntityData,
-    type: EnemyType = .CIRCLE,
-    texture: rl.Texture2D,
-    tinted_texture: rl.Texture2D,
-    detection_radius: f32,
-    animation_timer: ti.Timer = .{ .auto_start = true, .duration = 0.3, .repeat = true },
-    direction_timer: ti.Timer = .{ .auto_start = true, .duration = 2, .repeat = true },
-    idle_direction_right: bool = true,
-    damage_dealt: f32 = 10,
-    alive: bool = true,
-    
-    pub fn update(self: *Enemy) void {
-        if(self.alive) {
-            self.runAI();
-            self.data.update();
-            self.data.updateAnimations(&self.animation_timer);
-            
-            if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !self.data.immunity_timer.active and main.player.data.pos.y < self.data.pos.y - pl.def_player_size.y / 2) {
-                main.player.data.jumpMidAir(6);
-                self.data.health -= 10;
-                self.data.hit_timer.activate();
-                self.data.immunity_timer.activate();
-                main.player.data.immunity_timer.activate();
-            }
-            
-            if(self.getHurtBox().checkCollision(main.player.data.getRect()) and !main.player.data.immunity_timer.active) {
-                main.player.data.health -= self.damage_dealt;
-                main.player.data.immunity_timer.activate();
-                main.player.data.hit_timer.activate();
-                main.player.data.knockBack(self.data.pos.x < main.player.data.pos.x, 7);
-                sha.shakeScreen(0.2, 3);
-            }
-            
-            if(main.player.sword.checkSwordCollision(self.getHurtBox()) and !self.data.immunity_timer.active) {
-                self.data.health -= 10;
-                self.data.hit_timer.activate();
-                self.data.immunity_timer.activate();
-                self.data.knockBack(main.player.data.pos.x < self.data.pos.x, 5);
-            }
-            
-            if(self.data.health <= 0) self.alive = false;
-        }
-    }
-    
-    pub fn draw(self: *Enemy) void {
-        const texture = if(self.data.hit_timer.active) self.tinted_texture else self.texture;
-        const flip: f32 = if(self.data.last_direction_right) 1 else -1;
-        if(self.alive) {
-            rl.drawTexturePro(texture, .{ .x = 20 * @as(f32, @floatFromInt(@intFromEnum(self.data.anim_state))), .y = 0, .width = 20 * flip, .height = 30 }, 
-                self.data.getRect(), .zero(), 0, self.data.color);
-            if (main.f3) rl.drawRectangleLinesEx(self.data.getRect(), 3, .orange);
-            if (main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .red);
-        }
-    }
-    
-    pub fn playerClose(self: *Enemy) bool {
-        const player = main.player.data;
-        if(player.pos.x - self.data.pos.x >= -self.detection_radius 
-            and player.pos.x - self.data.pos.x < self.detection_radius 
-            and player.pos.y - self.data.pos.y >= -self.detection_radius / 3
-            and player.pos.y - self.data.pos.y < self.detection_radius / 3
-            and !self.data.immunity_timer.active) return true;
-        return false;
-    }
-    
-    pub fn runAI(self: *Enemy) void {
-        const player = main.player.data;
-        self.direction_timer.update();
-        if(self.direction_timer.called) self.idle_direction_right = !self.idle_direction_right;
-        
-        if(self.data.collisionsX[@intFromEnum(ent.CollisionDirectionX.LEFT)] or self.data.collisionsX[@intFromEnum(ent.CollisionDirectionX.RIGHT)]) {
-            const rand = rl.getRandomValue(0, 2);
-            if(rand != 0) self.idle_direction_right = !self.idle_direction_right else self.data.jump();
-            self.direction_timer.start_time = @floatCast(rl.getTime());
-        }
-        
-        if(self.playerClose()) {
-            if(self.data.pos.x >= player.pos.x) self.data.moveLeft() else self.data.moveRight();
-        } else {
-            if(self.idle_direction_right) self.data.moveRight() else self.data.moveLeft();
-        }
-    }
-    
-    pub fn getHurtBox(self: *Enemy) rl.Rectangle {
-        const shrink_amount: f32 = 8;
-        const y_offset: f32 = 3;
-        return .{ .x = self.data.getRect().x + shrink_amount, .y = self.data.getRect().y + shrink_amount + y_offset, 
-            .width = self.data.getRect().width - shrink_amount * 2, .height = self.data.getRect().height - shrink_amount * 2 - y_offset };
-    }
-};
-
 pub fn initEnemies() void {
     enemies = std.array_list.Managed(Enemy).init(main.allocator);
 }
@@ -116,55 +18,120 @@ pub fn deinitEnemies() void {
     enemies.deinit();
 }
 
-pub fn newEnemy(ent_type: EnemyType, pos: rl.Vector2) Enemy {
-    const size: rl.Vector2 = switch (ent_type) {
-        .CIRCLE => .{ .x = 40, .y = 60 },
-        .TRIANGLE => .{ .x = 40, .y = 60 },
-        .TRIANGLE_BOSS => .{ .x = 40, .y = 60 }
+pub fn summonEnemy(enemy_type: EnemyType, enemy_pos: rl.Vector2) void {
+    var enemy = switch (enemy_type) {
+        .SIMPLE_TRIANGLE => Enemy{ .SIMPLE_TRIANGLE = SimpleTriangle{} },
+        .ENRAGED_TRIANGLE => Enemy{ .ENRAGED_TRIANGLE = EnragedTriangle{} },
+        .FLYING_TRIANGLE => Enemy{ .FLYING_TRIANGLE = FlyingTriangle{} },
     };
     
-    const speed: f32 = switch (ent_type) {
-        .CIRCLE => 1.2,
-        .TRIANGLE => 2,
-        .TRIANGLE_BOSS => 2.4
-    };
-    
-    const health: f32 = switch (ent_type) {
-        .CIRCLE => 30,
-        .TRIANGLE => 20,
-        .TRIANGLE_BOSS => 1000
-    };
-    
-    const texture: rl.Texture2D = switch (ent_type) {
-        .CIRCLE => res.circle_atlas,
-        .TRIANGLE => res.triangle_atlas,
-        .TRIANGLE_BOSS => res.triangle_atlas
-    };
-    
-    const detection_radius: f32 = switch (ent_type) {
-        .CIRCLE => 200,
-        .TRIANGLE => 350,
-        .TRIANGLE_BOSS => 400
-    };
-    
-    const damage_dealt: f32 = switch (ent_type) {
-        .CIRCLE => 10,
-        .TRIANGLE => 20,
-        .TRIANGLE_BOSS => 30
-    };
-    
-    var enemy = Enemy{ .data = .{ .pos = pos, .size = size, .speed = speed, .health = health }, .texture = texture, .tinted_texture = main.fullyTintTexture(texture, .white), .detection_radius = detection_radius, .damage_dealt = damage_dealt };   
-    
-    enemy.animation_timer.init();
-    enemy.direction_timer.init();
-    enemy.data.hit_timer.init();
-    enemy.data.immunity_timer.init();
-    
-    enemy.data.immunity_timer.duration = 1;
-    
-    return enemy;
+    enemy.setPos(enemy_pos);
+    enemies.append(enemy) catch crsh.crash(.OUT_OF_MEMORY);
 }
 
-pub fn summonEnemy(ent_type: EnemyType, pos: rl.Vector2) void {
-    enemies.append(newEnemy(ent_type, pos)) catch crsh.crash(.OUT_OF_MEMORY);
-}
+pub const EnemyType = enum {
+    SIMPLE_TRIANGLE,
+    ENRAGED_TRIANGLE,
+    FLYING_TRIANGLE
+};
+
+pub const Enemy = union(EnemyType) {
+    SIMPLE_TRIANGLE: SimpleTriangle,
+    ENRAGED_TRIANGLE: EnragedTriangle,
+    FLYING_TRIANGLE: FlyingTriangle,
+    
+    pub fn setPos(self: *Enemy, pos: rl.Vector2) void {
+        switch (self.*) {
+            .SIMPLE_TRIANGLE => |*s| s.data.pos = pos,
+            .ENRAGED_TRIANGLE => |*e| e.data.pos = pos,
+            .FLYING_TRIANGLE => |*f| f.data.pos = pos,
+        }
+    }
+    
+    pub fn update(self: *Enemy) void {
+        switch (self.*) {
+            .SIMPLE_TRIANGLE => |*s| s.update(),
+            .ENRAGED_TRIANGLE => |*e| e.update(),
+            .FLYING_TRIANGLE => |*f| f.update(),
+        }
+    }
+    
+    pub fn draw(self: *Enemy) void {
+        switch (self.*) {
+            .SIMPLE_TRIANGLE => |*s| s.draw(),
+            .ENRAGED_TRIANGLE => |*e| e.draw(),
+            .FLYING_TRIANGLE => |*f| f.draw(),
+        }
+    }
+};
+
+const SimpleTriangle = struct {
+    data: ent.EntityData = .{ .size = .{ .x = 48, .y = 48 }, .health = 30, .speed = 1.5 },
+    idle_direction_right: bool = true,
+    
+    pub fn update(self: *SimpleTriangle) void {
+        if(self.data.collisionsX[0] or self.data.collisionsX[1]) self.idle_direction_right = !self.idle_direction_right;
+        if(self.idle_direction_right) self.data.moveRight() else self.data.moveLeft();
+        
+        self.data.update();
+    }
+    
+    pub fn draw(self: *SimpleTriangle) void {
+        const data = self.data;
+        rl.drawTriangle(.{ .x = data.pos.x + data.size.x / 2, .y = data.pos.y }, .{ .x = data.pos.x, .y = data.pos.y + data.size.y }, 
+            .{ .x = data.pos.x + data.size.x, .y = data.pos.y + data.size.y }, .blue);
+    }
+};
+
+const EnragedTriangle = struct {
+    data: ent.EntityData = .{ .size = .{ .x = 48, .y = 48 }, .health = 30, .speed = 1.2, .gravity = 0, .terminal_velocity = 0 },
+    idle_direction_right: bool = true,
+    
+    pub fn playerClose(self: *EnragedTriangle) bool {
+        const player = main.player.data;
+        const radius: f32 = 250;
+        if(player.pos.x - self.data.pos.x >= -radius 
+            and player.pos.x - self.data.pos.x < radius 
+            and player.pos.y - self.data.pos.y >= -radius / 3
+            and player.pos.y - self.data.pos.y < radius / 3
+            and !self.data.immunity_timer.active) return true;
+        return false;
+    }
+    
+    pub fn update(self: *EnragedTriangle) void {
+        if(self.data.collisionsX[0] or self.data.collisionsX[1]) {
+            if(self.playerClose()) self.data.jump() else self.idle_direction_right = !self.idle_direction_right;
+        }
+        
+        if(self.idle_direction_right) self.data.moveRight() else self.data.moveLeft();
+        
+        if(self.playerClose()) {
+            self.data.speed = 2.2;
+            if(self.data.pos.x >= main.player.data.pos.x) self.data.moveLeft() else self.data.moveRight();
+        } else {
+            self.data.speed = 1.2;
+        }
+        
+        self.data.update();
+    }
+    
+    pub fn draw(self: *EnragedTriangle) void {
+        const data = self.data;
+        rl.drawTriangle(.{ .x = data.pos.x + data.size.x / 2, .y = data.pos.y }, .{ .x = data.pos.x, .y = data.pos.y + data.size.y }, 
+            .{ .x = data.pos.x + data.size.x, .y = data.pos.y + data.size.y }, if(self.data.last_direction_right) .orange else .yellow);
+    }
+};
+
+const FlyingTriangle = struct {
+    data: ent.EntityData = .{ .size = .{ .x = 64, .y = 64 }, .health = 40, .speed = 1.7 },
+    
+    pub fn update(self: *FlyingTriangle) void {
+        self.data.update();
+    }
+    
+    pub fn draw(self: *FlyingTriangle) void {
+        const data = self.data;
+        rl.drawTriangle(.{ .x = data.pos.x + data.size.x / 2, .y = data.pos.y }, .{ .x = data.pos.x, .y = data.pos.y + data.size.y }, 
+            .{ .x = data.pos.x + data.size.x, .y = data.pos.y + data.size.y }, .green);
+    }
+};

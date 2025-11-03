@@ -32,21 +32,24 @@ pub const DefaultAnimState = enum {
 };
 
 pub const EntityData = struct {
+    health: f32 = 5,
     pos: rl.Vector2 = .{ .x = 0, .y = 0 },
     size: rl.Vector2,
+    speed: f32 = 3,
+    gravity: f32 = 0.5,
+    terminal_velocity: f32 = 15,
+    is_player: bool = false,
+    
     vel: rl.Vector2 = .{ .x = 0, .y = 0 },
     collisionsX: [2]bool = .{ false, false },
     collisionsY: [2]bool = .{ false, false },
-    speed: f32 = 3,
     last_direction_right: bool = true,
     anim_state: DefaultAnimState = .IDLE1,
     leg_move_toggle: bool = false,
-    health: f32 = 5,
     hit_timer: ti.Timer = .{ .duration = 0.05 },
     immunity_timer: ti.Timer = .{ .duration = 1.5 },
     color: rl.Color = .white,
     is_being_knocked: bool = false,
-    is_player: bool = false,
     can_walljump: bool = false,
     dialog_collided: bool = false,
     parsed_dialog: ?dia.Dialog = null,
