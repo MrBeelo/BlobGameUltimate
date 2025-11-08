@@ -48,15 +48,6 @@ pub const Enemy = union(EnemyType) {
         };
     }
     
-    pub fn getHurtBox(self: *Enemy) rl.Rectangle {
-        const buf: f32 = 8;
-        return switch (self.*) {
-            .SIMPLE_TRIANGLE => |*s| rl.Rectangle{ .x = s.data.pos.x + buf, .y = s.data.pos.y + buf, .width = s.data.size.x - buf * 2, .height = s.data.size.y - buf * 2 },
-            .ENRAGED_TRIANGLE => |*e| rl.Rectangle{ .x = e.data.pos.x + buf, .y = e.data.pos.y + buf, .width = e.data.size.x - buf * 2, .height = e.data.size.y - buf * 2 },
-            .FLYING_TRIANGLE => |*f| rl.Rectangle{ .x = f.data.pos.x + buf, .y = f.data.pos.y + buf, .width = f.data.size.x - buf * 2, .height = f.data.size.y - buf * 2 }
-        };
-    }
-    
     pub fn setPos(self: *Enemy, pos: rl.Vector2) void {
         switch (self.*) {
             .SIMPLE_TRIANGLE => |*s| s.data.pos = pos,
@@ -106,8 +97,8 @@ fn drawTriangleEyes(data: *ent.EntityData, angry: bool) void {
     rl.drawTexturePro(res.triangle_eyes, src, data.getRect(), .{ .x = 0, .y = 0 }, 0, data.color);
 }
 
-fn updatePlayerSwordCollisions(data: *ent.EntityData) void {
-    if(data.getRect().checkCollision(main.player.data.getRect()) and !data.immunity_timer.active and main.player.data.pos.y < data.pos.y - pl.def_player_size.y / 2) {
+fn updatePlayerSwordCollisions(hurt_box: rl.Rectangle, data: *ent.EntityData) void {
+    if(hurt_box.checkCollision(main.player.data.getRect()) and !data.immunity_timer.active and main.player.data.pos.y < data.pos.y - pl.def_player_size.y / 2) {
         main.player.data.jumpMidAir(6);
         data.health -= 10;
         data.hit_timer.activate();
@@ -115,7 +106,7 @@ fn updatePlayerSwordCollisions(data: *ent.EntityData) void {
         main.player.data.immunity_timer.activate();
     }
     
-    if(data.getRect().checkCollision(main.player.data.getRect()) and !main.player.data.immunity_timer.active) {
+    if(hurt_box.checkCollision(main.player.data.getRect()) and !main.player.data.immunity_timer.active) {
         main.player.data.health -= 10;
         main.player.data.immunity_timer.activate();
         main.player.data.hit_timer.activate();
@@ -123,7 +114,7 @@ fn updatePlayerSwordCollisions(data: *ent.EntityData) void {
         sha.shakeScreen(0.2, 3);
     }
     
-    if(main.player.sword.checkSwordCollision(data.getRect()) and !data.immunity_timer.active) {
+    if(main.player.sword.checkSwordCollision(hurt_box) and !data.immunity_timer.active) {
         data.health -= 10;
         data.hit_timer.activate();
         data.immunity_timer.activate();
@@ -135,23 +126,34 @@ const SimpleTriangle = struct {
     data: ent.EntityData = .{ .size = .{ .x = 48, .y = 48 }, .health = 30, .speed = 1.5 },
     idle_direction_right: bool = true,
     
+    pub fn getHurtBox(self: *SimpleTriangle) rl.Rectangle {
+        const buf = 10;
+        return rl.Rectangle{ .x = self.data.pos.x + buf, .y = self.data.pos.y + buf, .width = self.data.size.x - buf * 2, .height = self.data.size.y - buf * 2 };
+    }
+    
     pub fn update(self: *SimpleTriangle) void {
         if(self.data.collisionsX[0] or self.data.collisionsX[1]) self.idle_direction_right = !self.idle_direction_right;
         if(self.idle_direction_right) self.data.moveRight() else self.data.moveLeft();
         
         self.data.update();
-        updatePlayerSwordCollisions(&self.data);
+        updatePlayerSwordCollisions(self.getHurtBox(), &self.data);
     }
     
     pub fn draw(self: *SimpleTriangle) void {
         drawGameTriangle(self.data, .blue);
         drawTriangleEyes(&self.data, false);
+        if(main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .red);
     }
 };
 
 const EnragedTriangle = struct {
     data: ent.EntityData = .{ .size = .{ .x = 48, .y = 48 }, .health = 30, .speed = 1.2, .gravity = 0, .terminal_velocity = 0 },
     idle_direction_right: bool = true,
+    
+    pub fn getHurtBox(self: *EnragedTriangle) rl.Rectangle {
+        const buf = 10;
+        return rl.Rectangle{ .x = self.data.pos.x + buf, .y = self.data.pos.y + buf, .width = self.data.size.x - buf * 2, .height = self.data.size.y - buf * 2 };
+    }
     
     pub fn playerClose(self: *EnragedTriangle) bool {
         const player = main.player.data;
@@ -179,25 +181,32 @@ const EnragedTriangle = struct {
         }
         
         self.data.update();
-        updatePlayerSwordCollisions(&self.data);
+        updatePlayerSwordCollisions(self.getHurtBox(), &self.data);
     }
     
     pub fn draw(self: *EnragedTriangle) void {
         drawGameTriangle(self.data, .orange);
         drawTriangleEyes(&self.data, self.playerClose());
+        if(main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .red);
     }
 };
 
 const FlyingTriangle = struct {
     data: ent.EntityData = .{ .size = .{ .x = 64, .y = 64 }, .health = 40, .speed = 1.7 },
     
+    pub fn getHurtBox(self: *FlyingTriangle) rl.Rectangle {
+        const buf = 10;
+        return rl.Rectangle{ .x = self.data.pos.x + buf, .y = self.data.pos.y + buf, .width = self.data.size.x - buf * 2, .height = self.data.size.y - buf * 2 };
+    }
+    
     pub fn update(self: *FlyingTriangle) void {
         self.data.update();
-        updatePlayerSwordCollisions(&self.data);
+        updatePlayerSwordCollisions(self.getHurtBox(), &self.data);
     }
     
     pub fn draw(self: *FlyingTriangle) void {
         drawGameTriangle(self.data, .green);
         drawTriangleEyes(&self.data, false);
+        if(main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .red);
     }
 };
