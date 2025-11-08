@@ -48,7 +48,7 @@ pub fn fullyTintTexture(texture: rl.Texture2D, color: rl.Color) rl.Texture2D {
 
 pub fn updateGame() void {
     map.maps[savefile.current_map].update();
-    for(ene.enemies.items) |*enemy| enemy.update();
+    for(ene.enemies.items) |*enemy| if(enemy.isAlive()) enemy.update();
     player.update();
     cam.updateCamera();
     if(inp.getPressKey(.ESCAPE)) men.changeGameState(.PAUSED);
@@ -59,7 +59,7 @@ pub fn updateGame() void {
 pub fn drawGame() void {
     rl.beginMode2D(cam.camera);
     map.maps[savefile.current_map].draw();
-    for(ene.enemies.items) |*enemy| enemy.draw();
+    for(ene.enemies.items) |*enemy| if(enemy.isAlive()) enemy.draw();
     player.draw();
     rl.endMode2D();
     

@@ -35,6 +35,8 @@ pub var sword_item: rl.Texture2D = undefined;
 
 pub var shrine: rl.Texture2D = undefined;
 
+pub var triangle_eyes: rl.Texture2D = undefined;
+
 fn loadT(file_path: [:0]const u8) rl.Texture {
     return rl.loadTexture(file_path) catch crsh.crash(.RAYLIB_ERROR);
 }
@@ -79,6 +81,8 @@ pub fn loadResources() void {
     sword_item = loadT("res/sprite/ui/sword_item.png");
     
     shrine = loadT("res/sprite/sword_shrine.png");
+    
+    triangle_eyes = loadT("res/sprite/entity/triangle_eyes.png");
 }
 
 pub fn unloadResources() void {
