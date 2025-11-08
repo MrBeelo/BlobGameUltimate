@@ -25,7 +25,7 @@ pub fn summonEnemy(enemy_type: EnemyType, enemy_pos: rl.Vector2) void {
         .FLYING_TRIANGLE => Enemy{ .FLYING_TRIANGLE = FlyingTriangle{} },
     };
     
-    enemy.setPos(enemy_pos);
+    enemy.getData().pos = enemy_pos;
     enemies.append(enemy) catch crsh.crash(.OUT_OF_MEMORY);
 }
 
@@ -40,22 +40,14 @@ pub const Enemy = union(EnemyType) {
     ENRAGED_TRIANGLE: EnragedTriangle,
     FLYING_TRIANGLE: FlyingTriangle,
     
-    pub fn isAlive(self: *Enemy) bool {
+    pub fn getData(self: *Enemy) *ent.EntityData {
         return switch (self.*) {
-            .SIMPLE_TRIANGLE => |*s| s.data.health > 0,
-            .ENRAGED_TRIANGLE => |*e| e.data.health > 0,
-            .FLYING_TRIANGLE => |*f| f.data.health > 0,
+            .SIMPLE_TRIANGLE => |*s| &s.data,
+            .ENRAGED_TRIANGLE => |*e| &e.data,
+            .FLYING_TRIANGLE => |*f| &f.data,
         };
     }
-    
-    pub fn setPos(self: *Enemy, pos: rl.Vector2) void {
-        switch (self.*) {
-            .SIMPLE_TRIANGLE => |*s| s.data.pos = pos,
-            .ENRAGED_TRIANGLE => |*e| e.data.pos = pos,
-            .FLYING_TRIANGLE => |*f| f.data.pos = pos,
-        }
-    }
-    
+     
     pub fn update(self: *Enemy) void {
         switch (self.*) {
             .SIMPLE_TRIANGLE => |*s| s.update(),
