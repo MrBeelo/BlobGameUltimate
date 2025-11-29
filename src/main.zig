@@ -116,6 +116,8 @@ pub fn main() void {
         bg.drawBackground(bg.getBackgroundType());
         if(game_state == .PLAYING or game_state == .MAP_TRANSITION or game_state == .PAUSED) drawGame();
         
+        if(game_state != .PLAYING and game_state != .MAP_TRANSITION) men.drawMenus();
+        
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 80 }, .black);
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Current Map: {d}", .{savefile.current_map}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 120 }, .black);
         if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Milk: {d}", .{savefile.milk}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 160 }, .black);
@@ -128,7 +130,5 @@ pub fn main() void {
         defer rl.endDrawing();
         rl.clearBackground(.black);
         scr.drawTarget();
-        
-        if(game_state != .PLAYING and game_state != .MAP_TRANSITION) men.drawMenus();
     }
 }

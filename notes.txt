@@ -2,8 +2,12 @@ Blob Game: Ultimate Notes
 Hey me! Here are some notes/todos for the game. Good luck I guess? (Writing on 2/9/25)
 GOAL: END OF FEBRUARY
 
-// IMPORTANT TODO //
-Redo main menu logo (make it white) because it looks like shit
+// TODO //
+Change game logo
+Add settings
+Add keybinds
+Make multi-part dialogue
+
 
 // IDEAS //
 A new art style, along with the old 2 ones

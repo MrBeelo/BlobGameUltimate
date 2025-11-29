@@ -55,7 +55,7 @@ pub const EntityData = struct {
     parsed_dialog: ?dia.Dialog = null,
     
     pub fn update(self: *EntityData) void {
-        if(self.vel.y < 15) self.vel.y += 0.5 * main.dt;
+        if(self.vel.y < 15) self.vel.y += self.gravity * main.dt;
         self.can_walljump = false;
         
         self.pos.x += self.vel.x * main.dt;
@@ -90,6 +90,14 @@ pub const EntityData = struct {
     pub fn moveRight(self: *EntityData) void {
         if(!self.is_being_knocked) self.vel.x = self.speed;
         self.last_direction_right = true;
+    }
+    
+    pub fn moveUp(self: *EntityData) void {
+        if(!self.is_being_knocked) self.vel.y = -self.speed;
+    }
+    
+    pub fn moveDown(self: *EntityData) void {
+        if(!self.is_being_knocked) self.vel.y = self.speed;
     }
     
     pub fn jump(self: *EntityData) void {
