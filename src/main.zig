@@ -110,19 +110,26 @@ pub fn main() void {
         bg.updateBackground(bg.getBackgroundType());
         if(game_state == .PLAYING) updateGame() else men.updateMenus();
         
-        if(scr.target.texture.id != 0) rl.beginTextureMode(scr.target);
+        if(scr.game_target.texture.id != 0) rl.beginTextureMode(scr.game_target);
         rl.clearBackground(.white);
         
         bg.drawBackground(bg.getBackgroundType());
         if(game_state == .PLAYING or game_state == .MAP_TRANSITION or game_state == .PAUSED) drawGame();
         
+        rl.endTextureMode();
+        
+        if(scr.menu_target.texture.id != 0) rl.beginTextureMode(scr.menu_target);
+        rl.clearBackground(.blank);
+        
         if(game_state != .PLAYING and game_state != .MAP_TRANSITION) men.drawMenus();
         
-        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 80 }, .black);
-        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Current Map: {d}", .{savefile.current_map}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 120 }, .black);
-        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Milk: {d}", .{savefile.milk}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 160 }, .black);
-        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Position: [{d:.1}, {d:.1}]", .{player.data.pos.x, player.data.pos.y}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 200 }, .black);
-        if(f3) txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Game State: {}", .{game_state}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 240 }, .black);
+        if(f3) {
+            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 80 }, .black);
+            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Current Map: {d}", .{savefile.current_map}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 120 }, .black);
+            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Milk: {d}", .{savefile.milk}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 160 }, .black);
+            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Position: [{d:.1}, {d:.1}]", .{player.data.pos.x, player.data.pos.y}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 200 }, .black);
+            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Game State: {}", .{game_state}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 240 }, .black);
+        }
         
         rl.endTextureMode();
         
