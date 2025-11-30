@@ -65,30 +65,50 @@ pub const Enemy = union(EnemyType) {
     }
 };
 
-fn drawGameTriangle(data: ent.EntityData, color: rl.Color) void {
+fn rotatePoint(point: rl.Vector2, center: rl.Vector2, rot: f32) rl.Vector2 {
+    const sine = @sin(rot * std.math.pi / 180);
+    const cosine = @cos(rot * std.math.pi / 180);
+    
+    const init_x = point.x - center.x;
+    const init_y = point.y - center.y;
+    
+    const new_x = cosine * init_x - sine * init_y;
+    const new_y = sine * init_x + cosine * init_y;
+    
+    return rl.Vector2{ .x = new_x + center.x, .y = new_y + center.y }; 
+}
+
+fn drawGameTriangle(data: ent.EntityData, color: rl.Color, rotation: f32, equilateral: bool) void {
     const buf = 5;
     const outline_color = rl.colorBrightness(color, -0.2);
     const thickness = 4;
     
-    const p1 = rl.Vector2{ .x = data.pos.x + data.size.x / 2, .y = data.pos.y + buf };
+    const p1 = rl.Vector2{ .x = data.pos.x + data.size.x / 2, .y = data.pos.y + buf + if(equilateral) data.size.y - data.size.y * @sqrt(0.75) else 0 };
     const p2 = rl.Vector2{ .x = data.pos.x + buf, .y = data.pos.y + data.size.y - buf };
     const p3 = rl.Vector2{ .x = data.pos.x + data.size.x - buf, .y = data.pos.y + data.size.y - buf };
+    
+    const center = rl.Vector2{ .x = (p1.x + p2.x + p3.x) / 3, .y = (p1.y + p2.y + p3.y) / 3 }; 
+    
+    const rp1 = rotatePoint(p1, center, rotation);
+    const rp2 = rotatePoint(p2, center, rotation);
+    const rp3 = rotatePoint(p3, center, rotation);
     
     const tinted_color_alpha: f32 = if(data.immunity_timer.active and !data.hit_timer.active) 0.6 else 1;
     
     const fully_tinted_color = if(data.hit_timer.active) rl.Color.white else color.alpha(tinted_color_alpha);
     const fully_tinted_outline_color = if(data.hit_timer.active) rl.Color.white else outline_color.alpha(tinted_color_alpha);
     
-    rl.drawTriangle(p1, p2, p3, fully_tinted_color);
-    rl.drawLineEx(p1, p2, thickness, fully_tinted_outline_color);
-    rl.drawLineEx(p2, p3, thickness, fully_tinted_outline_color);
-    rl.drawLineEx(p1, p3, thickness, fully_tinted_outline_color);
+    rl.drawTriangle(rp1, rp2, rp3, fully_tinted_color);
+    rl.drawLineEx(rp1, rp2, thickness, fully_tinted_outline_color);
+    rl.drawLineEx(rp2, rp3, thickness, fully_tinted_outline_color);
+    rl.drawLineEx(rp1, rp3, thickness, fully_tinted_outline_color);
 }
 
-fn drawTriangleEyes(data: *ent.EntityData, angry: bool) void {
+fn drawTriangleEyes(data: *ent.EntityData, angry: bool, for_equilateral: bool) void {
     const flip: f32 = if(data.last_direction_right) 1 else -1;
     const anger: f32 = if(angry) 48 else 0;
-    const src = rl.Rectangle{ .x = 0, .y = anger, .width = 48 * flip, .height = 48 };
+    const offset: f32 = if(for_equilateral) 3 else 0;
+    const src = rl.Rectangle{ .x = 0, .y = anger - offset, .width = 48 * flip, .height = 48 };
     rl.drawTexturePro(res.triangle_eyes, src, data.getRect(), .{ .x = 0, .y = 0 }, 0, data.color);
 }
 
@@ -99,6 +119,7 @@ fn updatePlayerSwordCollisions(hurt_box: rl.Rectangle, data: *ent.EntityData, is
         data.hit_timer.activate();
         data.immunity_timer.activate();
         main.player.data.immunity_timer.activate();
+        sha.shakeScreen(0.1, 2);
     }
     
     if(hurt_box.checkCollision(main.player.data.getRect()) and !main.player.data.immunity_timer.active) {
@@ -106,7 +127,7 @@ fn updatePlayerSwordCollisions(hurt_box: rl.Rectangle, data: *ent.EntityData, is
         main.player.data.immunity_timer.activate();
         main.player.data.hit_timer.activate();
         main.player.data.knockBack(data.pos.x < main.player.data.pos.x, 7);
-        sha.shakeScreen(0.2, 3);
+        sha.shakeScreen(0.2, 4);
     }
     
     if(main.player.sword.checkSwordCollision(hurt_box) and !data.immunity_timer.active) {
@@ -114,6 +135,7 @@ fn updatePlayerSwordCollisions(hurt_box: rl.Rectangle, data: *ent.EntityData, is
         data.hit_timer.activate();
         data.immunity_timer.activate();
         if(is_knockable) data.knockBack(main.player.data.pos.x < data.pos.x, 5);
+        sha.shakeScreen(0.1, 2);
     }
 }
 
@@ -135,8 +157,8 @@ const SimpleTriangle = struct {
     }
     
     pub fn draw(self: *SimpleTriangle) void {
-        drawGameTriangle(self.data, .blue);
-        drawTriangleEyes(&self.data, false);
+        drawGameTriangle(self.data, .blue, 0, false);
+        drawTriangleEyes(&self.data, false, false);
         if(main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .red);
     }
 };
@@ -180,8 +202,8 @@ const EnragedTriangle = struct {
     }
     
     pub fn draw(self: *EnragedTriangle) void {
-        drawGameTriangle(self.data, .orange);
-        drawTriangleEyes(&self.data, self.playerClose());
+        drawGameTriangle(self.data, .orange, 0, false);
+        drawTriangleEyes(&self.data, self.playerClose(), false);
         if(main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .red);
     }
 };
@@ -190,10 +212,23 @@ const FlyingTriangle = struct {
     data: ent.EntityData = .{ .size = .{ .x = 64, .y = 64 }, .health = 40, .speed = 1.7, .gravity = 0, .terminal_velocity = 0 },
     cycle_direction_up: bool = true,
     set_down_pos: f32,
+    is_angry: bool = false,
+    rotation: f32 = 0,
     
     pub fn getHurtBox(self: *FlyingTriangle) rl.Rectangle {
         const buf = 10;
         return rl.Rectangle{ .x = self.data.pos.x + buf, .y = self.data.pos.y + buf, .width = self.data.size.x - buf * 2, .height = self.data.size.y - buf * 2 };
+    }
+    
+    pub fn playerClose(self: *FlyingTriangle) bool {
+        const player = main.player.data;
+        const radius: f32 = 250;
+        if(player.pos.x - self.data.pos.x >= -radius 
+            and player.pos.x - self.data.pos.x < radius 
+            and player.pos.y - self.data.pos.y >= -radius / 3
+            and player.pos.y - self.data.pos.y < radius / 3
+            and !self.data.immunity_timer.active) return true;
+        return false;
     }
     
     pub fn update(self: *FlyingTriangle) void {
@@ -209,14 +244,15 @@ const FlyingTriangle = struct {
         }
         
         if(self.cycle_direction_up) self.data.moveUp() else self.data.moveDown();
+        self.rotation += main.dt * 2;
         
         self.data.update();
         updatePlayerSwordCollisions(self.getHurtBox(), &self.data, false);
     }
     
     pub fn draw(self: *FlyingTriangle) void {
-        drawGameTriangle(self.data, .green);
-        drawTriangleEyes(&self.data, false);
+        drawGameTriangle(self.data, .green, self.rotation, true);
+        drawTriangleEyes(&self.data, self.playerClose(), true);
         if(main.f3) rl.drawRectangleLinesEx(self.getHurtBox(), 3, .red);
     }
 };
