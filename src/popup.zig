@@ -37,5 +37,5 @@ pub fn drawMilkPopup() void {
     rl.drawLineEx(bottom_left_point, .{ .x = bottom_right_point.x + 3, .y = bottom_right_point.y }, thickness, .black);
     rl.drawLineEx(up_right_point, bottom_right_point, thickness, .black);
     
-    txt.drawCustomText(std.fmt.allocPrintSentinel(main.allocator, "{d:.0}", .{main.savefile.milk}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .ITALIC, 60, .{ .x = scr.ui_buffer * 2 + 200 + modifier, .y = scr.ui_buffer * 2 + 100 }, .black);
+    txt.drawCustomText(main.formatString("{d:.0}", .{main.savefile.milk}), .ELEVATIA, .ITALIC, 60, .{ .x = scr.ui_buffer * 2 + 200 + modifier, .y = scr.ui_buffer * 2 + 100 }, .black);
 }

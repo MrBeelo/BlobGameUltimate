@@ -19,6 +19,7 @@ const pop = @import("popup.zig");
 const lit = @import("light.zig");
 const res = @import("resources.zig");
 const inv = @import("inventory.zig");
+const set = @import("settings.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -28,6 +29,7 @@ pub var player: pl.Player = undefined;
 pub var game_state: men.GameState = .MAIN;
 pub var should_exit: bool = false;
 pub var savefile: sav.SaveFile = undefined;
+pub var settings: set.Settings = undefined;
 
 pub fn mutateSlice(comptime T: type, slice: []const T) []T {
     const mut_slice = allocator.alloc(T, slice.len) catch crsh.crash(.OUT_OF_MEMORY);
@@ -44,6 +46,14 @@ pub fn fullyTintTexture(texture: rl.Texture2D, color: rl.Color) rl.Texture2D {
     const new_texture = rl.loadTextureFromImage(image) catch crsh.crash(.RAYLIB_ERROR);
     rl.unloadImage(image);
     return new_texture;
+}
+
+pub fn formatString(comptime fmt: []const u8, args: anytype) []const u8 {
+    return std.fmt.allocPrintSentinel(allocator, fmt, args, 0) catch crsh.crash(.OUT_OF_MEMORY);
+}
+
+pub fn nullTerStr(str: []const u8) [:0]const u8 {
+    return allocator.dupeZ(u8, str) catch crsh.crash(.OUT_OF_MEMORY);
 }
 
 pub fn updateGame() void {
@@ -91,6 +101,9 @@ pub fn main() void {
     ene.initEnemies();
     defer ene.deinitEnemies();
     
+    sav.loadSaveFile(&savefile) catch crsh.crash(.SAVE_ERROR);
+    set.loadSettings(&settings) catch crsh.crash(.SAVE_ERROR);
+    
     map.initTileAtlas();
     cam.initCamera();
     scr.initTarget();
@@ -98,9 +111,7 @@ pub fn main() void {
     map.initMaps();
     bg.initBackgrounds();
     sta.initStars();
-    
-    sav.loadSaveFile(&savefile) catch crsh.crash(.SAVE_ERROR);
-    
+        
     while (!rl.windowShouldClose() and !should_exit) {
         dt = rl.getFrameTime() * sim_fps;
         inp.updateInputManager();
@@ -124,11 +135,11 @@ pub fn main() void {
         if(game_state != .PLAYING and game_state != .MAP_TRANSITION) men.drawMenus();
         
         if(f3) {
-            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "FPS: {d:.1}", .{rl.getFPS()}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 80 }, .black);
-            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Current Map: {d}", .{savefile.current_map}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 120 }, .black);
-            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Milk: {d}", .{savefile.milk}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 160 }, .black);
-            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Position: [{d:.1}, {d:.1}]", .{player.data.pos.x, player.data.pos.y}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 200 }, .black);
-            txt.drawCustomText(std.fmt.allocPrintSentinel(allocator, "Game State: {}", .{game_state}, 0) catch crsh.crash(.OUT_OF_MEMORY), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 240 }, .black);
+            txt.drawCustomText(formatString("FPS: {d:.1}", .{rl.getFPS()}), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 80 }, .black);
+            txt.drawCustomText(formatString("Current Map: {d}", .{savefile.current_map}), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 120 }, .black);
+            txt.drawCustomText(formatString("Milk: {d}", .{savefile.milk}), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 160 }, .black);
+            txt.drawCustomText(formatString("Position: [{d:.1}, {d:.1}]", .{player.data.pos.x, player.data.pos.y}), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 200 }, .black);
+            txt.drawCustomText(formatString("Game State: {}", .{game_state}), .ELEVATIA, .NORMAL, 32, .{ .x = 10, .y = 240 }, .black);
         }
         
         rl.endTextureMode();

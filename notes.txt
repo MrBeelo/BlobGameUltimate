@@ -7,7 +7,9 @@ Change game logo
 Add settings
 Add keybinds
 Make multi-part dialogue
-
+Add coins (dropped from enemies)
+Add store (rare powerups for milk, everything else for coins)
+Add powerup feature (bought from shop)
 
 // IDEAS //
 A new art style, along with the old 2 ones

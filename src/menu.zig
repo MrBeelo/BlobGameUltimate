@@ -10,6 +10,7 @@ const ti = @import("timer.zig");
 const bg = @import("background.zig");
 const int = @import("intro.zig");
 const res = @import("resources.zig");
+const set = @import("settings.zig");
 
 pub const GameState = enum {
     PLAYING,
@@ -17,7 +18,8 @@ pub const GameState = enum {
     MAIN,
     PAUSED,
     EXIT,
-    INTRO
+    INTRO,
+    SETTINGS
 };
 
 pub var map_transition_timer = ti.Timer{ .duration = 1 };
@@ -28,6 +30,8 @@ pub const ButtonType = union(enum) {
     change_game_state: GameState,
     exit: bool,
     reset_player: bool,
+    increase_int: *i32,
+    increase_volume: bool,
 };
 
 pub fn changeGameState(game_state: GameState) void {
@@ -58,6 +62,16 @@ pub const Button = struct {
             .reset_player => {
                 map.maps[main.savefile.current_map].reset();
                 changeGameState(.PLAYING);
+            },
+            .increase_int => |i| {
+                i.* += 1;
+                set.saveSettings(&main.settings) catch crsh.crash(.SAVE_ERROR);
+            },
+            .increase_volume => {
+                const vol = &main.settings.volume;
+                if(vol.* + 1 > 10 or vol.* < 0) vol.* = 0 else vol.* += 1;
+                set.saveSettings(&main.settings) catch crsh.crash(.SAVE_ERROR);
+                self.text = main.nullTerStr(main.formatString("VOLUME: {d}", .{main.settings.volume}));
             }
         }
     }
@@ -161,6 +175,7 @@ pub const Menu = struct {
 var menus: [@typeInfo(GameState).@"enum".fields.len]Menu = undefined;
 
 fn createButton(text: [:0]const u8, button_type: ButtonType, index: usize) Button {
+    std.debug.print("{s}\n", .{text});
     return Button{ .button_type = button_type, .text = text, .font_size = 64, .index = index };
 }
 
@@ -176,7 +191,8 @@ pub fn initMenus() void {
         Menu{ 
             .buttons = main.mutateSlice(Button, &[_]Button{
                 createButton("PLAY", .{ .reset_player = true }, 0),
-                createButton("EXIT", .{ .change_game_state = .EXIT }, 1)
+                createButton("SETTINGS", .{ .change_game_state = .SETTINGS }, 1),
+                createButton("EXIT", .{ .change_game_state = .EXIT }, 2)
             }), 
             .should_draw_texture = true,
             .texture = res.blob_logo
@@ -202,6 +218,15 @@ pub fn initMenus() void {
         
         // INTRO
         Menu{ .buttons = main.mutateSlice(Button, &[_]Button{}), .is_intro_menu = true },
+        
+        // SETTINGS
+        Menu{
+            .buttons = main.mutateSlice(Button, &[_]Button{
+                createButton(main.nullTerStr(main.formatString("VOLUME: {d}", .{main.settings.volume})), .{ .increase_volume = true }, 0),
+                createButton("BACK", .{ .change_game_state = .MAIN }, 1)
+            }), 
+            .top_text = "SETTINGS"
+        }
     };
 }
 
