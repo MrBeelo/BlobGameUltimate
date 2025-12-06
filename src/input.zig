@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+const main = @import("main.zig");
 
 const GameKey = enum {
     LEFT,
@@ -42,12 +43,12 @@ pub fn updateInputManager() void {
     holdKeys = [_]bool{ false } ** game_key_enum_length;
     pressKeys = [_]bool{ false } ** game_key_enum_length;
     
-    handleBothKeys(.a, .LEFT);
-    handleBothKeys(.d, .RIGHT);
-    handleBothKeys(.w, .UP);
-    handleBothKeys(.s, .DOWN);
-    handlePressKey(.space, .JUMP);
-    handlePressKey(.k, .ATTACK);
+    handleBothKeys(if(main.settings.arrow_keys) .left else .a, .LEFT);
+    handleBothKeys(if(main.settings.arrow_keys) .right else .d, .RIGHT);
+    handleBothKeys(if(main.settings.arrow_keys) .up else .w, .UP);
+    handleBothKeys(if(main.settings.arrow_keys) .down else .s, .DOWN);
+    handlePressKey(if(main.settings.x_jump_key) .x else .space, .JUMP);
+    handlePressKey(if(main.settings.z_attack_key) .z else .k, .ATTACK);
     handlePressKey(.enter, .CONFIRM);
     handlePressKey(.f3, .F3);
     handlePressKey(.escape, .ESCAPE);

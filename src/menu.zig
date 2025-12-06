@@ -30,8 +30,10 @@ pub const ButtonType = union(enum) {
     change_game_state: GameState,
     exit: bool,
     reset_player: bool,
-    increase_int: *i32,
     increase_volume: bool,
+    set_movement_keys: bool,
+    set_jump_key: bool,
+    set_attack_key: bool,
 };
 
 pub fn changeGameState(game_state: GameState) void {
@@ -63,15 +65,29 @@ pub const Button = struct {
                 map.maps[main.savefile.current_map].reset();
                 changeGameState(.PLAYING);
             },
-            .increase_int => |i| {
-                i.* += 1;
-                set.saveSettings(&main.settings) catch crsh.crash(.SAVE_ERROR);
-            },
             .increase_volume => {
                 const vol = &main.settings.volume;
                 if(vol.* + 1 > 10 or vol.* < 0) vol.* = 0 else vol.* += 1;
                 set.saveSettings(&main.settings) catch crsh.crash(.SAVE_ERROR);
                 self.text = main.nullTerStr(main.formatString("VOLUME: {d}", .{main.settings.volume}));
+            },
+            .set_movement_keys => {
+                const b = &main.settings.arrow_keys;
+                b.* = !b.*;
+                set.saveSettings(&main.settings) catch crsh.crash(.SAVE_ERROR);
+                self.text = if(main.settings.arrow_keys) "MOVEMENT KEYS: ARROWS" else "MOVEMENT KEYS: WASD";
+            },
+            .set_jump_key => {
+                const b = &main.settings.x_jump_key;
+                b.* = !b.*;
+                set.saveSettings(&main.settings) catch crsh.crash(.SAVE_ERROR);
+                self.text = if(main.settings.x_jump_key) "JUMP KEY: X" else "JUMP KEY: SPACE";
+            },
+            .set_attack_key => {
+                const b = &main.settings.z_attack_key;
+                b.* = !b.*;
+                set.saveSettings(&main.settings) catch crsh.crash(.SAVE_ERROR);
+                self.text = if(main.settings.z_attack_key) "ATTACK KEY: Z" else "ATTACK KEY: K";
             }
         }
     }
@@ -223,7 +239,10 @@ pub fn initMenus() void {
         Menu{
             .buttons = main.mutateSlice(Button, &[_]Button{
                 createButton(main.nullTerStr(main.formatString("VOLUME: {d}", .{main.settings.volume})), .{ .increase_volume = true }, 0),
-                createButton("BACK", .{ .change_game_state = .MAIN }, 1)
+                createButton(if(main.settings.arrow_keys) "MOVEMENT: ARROW KEYS" else "MOVEMENT: WASD KEYS", .{ .set_movement_keys = true }, 1),
+                createButton(if(main.settings.x_jump_key) "JUMP KEY: X" else "JUMP KEY: SPACE", .{ .set_jump_key = true }, 2),
+                createButton(if(main.settings.z_attack_key) "ATTACK KEY: Z" else "ATTACK KEY: K", .{ .set_attack_key = true }, 3),
+                createButton("BACK", .{ .change_game_state = .MAIN }, 4)
             }), 
             .top_text = "SETTINGS"
         }

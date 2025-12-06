@@ -6,7 +6,10 @@ const crsh = @import("crash.zig");
 const settings_path = "res/data/settings.json";
 
 pub const Settings = struct {
-    volume: i32
+    volume: i32,
+    arrow_keys: bool,
+    x_jump_key: bool,
+    z_attack_key: bool,
 };
 
 pub fn loadSettings(settings: *Settings) !void {
@@ -35,6 +38,9 @@ pub fn loadSettings(settings: *Settings) !void {
     
     const parsed_settings = parsed_value.value.object;
     settings.volume = @intCast(parsed_settings.get("volume").?.integer);
+    settings.arrow_keys = parsed_settings.get("arrow_keys").?.bool;
+    settings.x_jump_key = parsed_settings.get("x_jump_key").?.bool;
+    settings.z_attack_key = parsed_settings.get("z_attack_key").?.bool;
 }
 
 pub fn saveSettings(settings: *Settings) !void {
@@ -60,6 +66,9 @@ pub fn saveSettings(settings: *Settings) !void {
 
 pub fn newSettings() Settings {
     return .{ 
-        .volume = 10
+        .volume = 10,
+        .arrow_keys = false,
+        .x_jump_key = false,
+        .z_attack_key = false,
     };
 }
