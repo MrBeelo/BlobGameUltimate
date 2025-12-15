@@ -91,7 +91,7 @@ const moon_duration: f32 = 15;
 pub const BBU1Params = struct {
     top_color: rl.Color = .sky_blue,
     bottom_color: rl.Color = .blue,
-    day_phase: usize = 0,
+    day_phase: usize = 1,
     sun_moon_timer: ti.Timer = .{ .auto_start = true, .duration = sun_duration, .repeat = true },
     sun_moon_radius: f32 = 60,
     

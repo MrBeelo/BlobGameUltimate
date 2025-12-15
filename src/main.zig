@@ -68,9 +68,14 @@ pub fn updateGame() void {
 
 pub fn drawGame() void {
     rl.beginMode2D(cam.camera);
+    
+    rl.beginShaderMode(res.tint_shader);
     map.maps[savefile.current_map].draw();
+    rl.endShaderMode();
+    
     for(ene.enemies.items) |*enemy| if(enemy.getData().health > 0) enemy.draw();
     player.draw();
+    
     rl.endMode2D();
     
     lit.handleGlobalLights();

@@ -20,6 +20,7 @@ pub var player_atlas: rl.Texture2D = undefined;
 pub var tinted_player_atlas: rl.Texture2D = undefined;
 
 pub var blur_shader: rl.Shader = undefined;
+pub var tint_shader: rl.Shader = undefined;
 
 pub var sword_texture: rl.Texture2D = undefined;
 
@@ -67,6 +68,7 @@ pub fn loadResources() void {
     tinted_player_atlas = main.fullyTintTexture(player_atlas, .white);
     
     blur_shader = loadS("res/shader/blur.fs");
+    tint_shader = loadS("res/shader/tint.fs");
     
     sword_texture = loadT("res/sprite/entity/sword.png");
     
@@ -102,6 +104,7 @@ pub fn unloadResources() void {
     rl.unloadTexture(player_atlas);
     
     rl.unloadShader(blur_shader);
+    rl.unloadShader(tint_shader);
     
     rl.unloadTexture(sword_texture);
     

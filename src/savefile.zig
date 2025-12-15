@@ -8,6 +8,7 @@ const savefile_path = "res/data/savefile.json";
 pub const SaveFile = struct {
     current_map: usize,
     played_intro: bool,
+    coins: i32,
     milk: i32,
     has_sword: bool
 };
@@ -39,6 +40,7 @@ pub fn loadSaveFile(savefile: *SaveFile) !void {
     const parsed_savefile = parsed_value.value.object;
     savefile.current_map = @intCast(parsed_savefile.get("current_map").?.integer);
     savefile.played_intro = parsed_savefile.get("played_intro").?.bool;
+    savefile.coins = @intCast(parsed_savefile.get("coins").?.integer);
     savefile.milk = @intCast(parsed_savefile.get("milk").?.integer);
     savefile.has_sword = parsed_savefile.get("has_sword").?.bool;
 }
@@ -68,6 +70,7 @@ pub fn newSaveFile() SaveFile {
     return .{ 
         .current_map = 0, 
         .played_intro = false,
+        .coins = 0,
         .milk = 0,
         .has_sword = false
     };
