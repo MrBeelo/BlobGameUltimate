@@ -20,6 +20,7 @@ const lit = @import("light.zig");
 const res = @import("resources.zig");
 const inv = @import("inventory.zig");
 const set = @import("settings.zig");
+const coin = @import("coin.zig");
 
 pub const allocator = std.heap.page_allocator;
 pub var sim_fps: f32 = 60;
@@ -88,6 +89,7 @@ pub fn drawGame() void {
     if(pop.milk_popup_timer.active) pop.drawMilkPopup();
     player.data.drawDialog();
     inv.drawInventory();
+    coin.drawCoins();
 }
 
 pub fn main() void {

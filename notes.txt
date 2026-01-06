@@ -1,6 +1,7 @@
 Blob Game: Ultimate Notes
 Hey me! Here are some notes/todos for the game. Good luck I guess? (Writing on 2/9/25)
-GOAL: END OF FEBRUARY
+PAUSED SINCE: 6/1/26
+GOAL: idk continue the game ig
 
 // TODO //
 Change game logo
@@ -13,6 +14,7 @@ A new art style, along with the old 2 ones
 A total of 3 bosses, 3 attacks each, with final boss being either giant cube or beelo
 30 levels 0_0 (way easier tho)
 shop that takes milk :O
+CHARACTER SELECTION YOOOOOOOOO
 
 // AREAS //
 1. Plains
