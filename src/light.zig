@@ -16,7 +16,7 @@ pub fn handleGlobalLights() void {
     }
     rl.drawRectangle(0, 0, scr.sim_size.x, scr.sim_size.y, dimmed_color);
     rl.beginBlendMode(.additive);
-    rl.drawCircleGradient(@intFromFloat(bg.bbu1.calculateSunMoonPos().x), @intFromFloat(bg.bbu1.calculateSunMoonPos().y), 700, if(bg.bbu1.isDay()) .white else rl.colorAlpha(.white, 0.4), .blank);
+    rl.drawCircleGradient(bg.bbu1.calculateSunMoonPos(), 700, if(bg.bbu1.isDay()) .white else rl.colorAlpha(.white, 0.4), .blank);
     rl.endBlendMode();
 }
 
@@ -33,6 +33,6 @@ pub const Light = struct {
     color: rl.Color,
     
     pub fn draw(self: *Light) void {
-        rl.drawCircleGradient(@intFromFloat(self.pos.x), @intFromFloat(self.pos.y), self.radius, rl.colorAlpha(self.color, self.intensity), .blank);
+        rl.drawCircleGradient(self.pos, self.radius, rl.colorAlpha(self.color, self.intensity), .blank);
     }
 };

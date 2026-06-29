@@ -169,12 +169,12 @@ pub const BBU1Params = struct {
         const sun_outer_color: rl.Color = .yellow;
         const moon_inner_color: rl.Color = .white;
         const moon_outer_color: rl.Color = .light_gray;
-        rl.drawCircleGradient(@intFromFloat(self.calculateSunMoonPos().x), @intFromFloat(self.calculateSunMoonPos().y), self.sun_moon_radius, if(self.isDay()) sun_inner_color else moon_inner_color, if(self.isDay()) sun_outer_color else moon_outer_color);
+        rl.drawCircleGradient(self.calculateSunMoonPos(), self.sun_moon_radius, if(self.isDay()) sun_inner_color else moon_inner_color, if(self.isDay()) sun_outer_color else moon_outer_color);
     }
     
     pub fn drawExtraSunLight(self: *BBU1Params) void {
         const inner_color = if(self.globalState() < 0.5) rl.colorLerp(.blank, .orange, self.sunriseFactor()) else rl.colorLerp(.blank, .orange, self.sunsetFactor());
-        rl.drawCircleGradient(@intFromFloat(self.calculateSunMoonPos().x), @intFromFloat(self.calculateSunMoonPos().y), self.sun_moon_radius * 3, inner_color, .blank);
+        rl.drawCircleGradient(self.calculateSunMoonPos(), self.sun_moon_radius * 3, inner_color, .blank);
     }
     
     pub fn isDay(self: *BBU1Params) bool {

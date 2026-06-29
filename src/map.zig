@@ -79,14 +79,18 @@ pub var maps: []Map = undefined;
 var tile_atlas: TileAtlas = undefined;
 
 pub fn loadMap(path: []const u8, id: usize) !Map {
-    var file = try std.fs.cwd().openFile(path, .{});
-    defer file.close();
+    var file = try std.Io.Dir.cwd().openFile(main.io, path, .{});
+    defer file.close(main.io);
     
-    const file_size = try file.getEndPos();
+    const file_size = try file.length(main.io);
     const buffer = try main.allocator.alloc(u8, file_size);
     defer main.allocator.free(buffer);
+
+    var read_buffer: [4096]u8 = undefined;
+    var reader = file.reader(main.io, &read_buffer);
+    var reader_interface = &reader.interface;
     
-    _ = try file.readAll(buffer);
+    _ = try reader_interface.readSliceAll(buffer);
     
     var parsed: std.json.Parsed(std.json.Value) = try std.json.parseFromSlice(std.json.Value, main.allocator, buffer, .{});
     defer parsed.deinit();

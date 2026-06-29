@@ -14,17 +14,21 @@ pub const SaveFile = struct {
 };
 
 pub fn loadSaveFile(savefile: *SaveFile) !void {
-    var file = std.fs.cwd().openFile(savefile_path, .{ .mode = .read_only }) catch |err| switch (err) {
-        error.FileNotFound => try std.fs.cwd().createFile(savefile_path, .{}),
+    var file = std.Io.Dir.cwd().openFile(main.io, savefile_path, .{ .mode = .read_only }) catch |err| switch (err) {
+        error.FileNotFound => try std.Io.Dir.cwd().createFile(main.io, savefile_path, .{}),
         else => return err
     };
-    defer file.close();
+    defer file.close(main.io);
     
-    const file_size = try file.getEndPos();
+    const file_size = try file.length(main.io);
     const buffer = try main.allocator.alloc(u8, file_size);
     defer main.allocator.free(buffer);
+
+    var read_buffer: [4096]u8 = undefined;
+    var reader = file.reader(main.io, &read_buffer);
+    var reader_interface = &reader.interface;
     
-    _ = try file.readAll(buffer);
+    _ = try reader_interface.readSliceAll(buffer);
     
     var parsed_value: std.json.Parsed(std.json.Value) = std.json.parseFromSlice(std.json.Value, main.allocator, buffer, .{}) catch |err| switch (err) {
         error.UnexpectedEndOfInput => {
@@ -46,18 +50,21 @@ pub fn loadSaveFile(savefile: *SaveFile) !void {
 }
 
 pub fn saveSaveFile(savefile: *SaveFile) !void {
-    var file = std.fs.cwd().openFile(savefile_path, .{ .mode = .read_write }) catch |err| switch (err) {
-        error.FileNotFound => try std.fs.cwd().createFile(savefile_path, .{}),
+    var file = std.Io.Dir.cwd().openFile(main.io, savefile_path, .{ .mode = .read_write }) catch |err| switch (err) {
+        error.FileNotFound => try std.Io.Dir.cwd().createFile(main.io, savefile_path, .{}),
         else => return err
     };
     
-    defer file.close();
+    defer file.close(main.io);
     
-    try file.setEndPos(0);
-    try file.seekTo(0);
+    try file.setLength(main.io, 0);
+    var read_buf: [4096]u8 = undefined;
+    var reader = file.reader(main.io, &read_buf);
+    
+    try reader.seekTo(0);
     
     var buffer: [256]u8 = undefined;
-    var file_writer = file.writer(&buffer);
+    var file_writer = file.writer(main.io, &buffer);
     var file_writer_interface = &file_writer.interface;
     
     var stringify = std.json.Stringify{ .writer = file_writer_interface };

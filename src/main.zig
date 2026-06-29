@@ -23,6 +23,7 @@ const set = @import("settings.zig");
 const coin = @import("coin.zig");
 
 pub const allocator = std.heap.page_allocator;
+pub var io: std.Io = undefined;
 pub var sim_fps: f32 = 60;
 pub var dt: f32 = 0;
 pub var f3 = false;
@@ -93,6 +94,10 @@ pub fn drawGame() void {
 }
 
 pub fn main() void {
+    var threaded: std.Io.Threaded = .init(allocator, .{});
+    defer threaded.deinit();
+    io = threaded.io();
+    
     rl.setConfigFlags(.{ .window_resizable = true, .vsync_hint = true });
     
     rl.initWindow(@intFromFloat(scr.window_size.x), @intFromFloat(scr.window_size.y), "Blob Game: Ultimate");

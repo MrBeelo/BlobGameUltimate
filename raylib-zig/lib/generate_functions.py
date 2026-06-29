@@ -75,6 +75,7 @@ MANUAL = [
     "ComputeCRC32",
     "ComputeMD5",
     "ComputeSHA1",
+    "ComputeSHA256",
     "SetWindowIcons",
     "CheckCollisionPointPoly",
     "ColorToInt",
@@ -89,6 +90,8 @@ MANUAL = [
     "UnloadFontData",
     "DrawTextCodepoints",
     "LoadUTF8",
+    "LoadTextLines",
+    "UnloadTextLines",
     "TextJoin",
     "DrawLineStrip",
     "DrawTriangleFan",
@@ -130,6 +133,10 @@ def c_to_zig_type(c: str) -> str:
 def ziggify_type(name: str, t: str, func_name: str) -> str:
     if func_name in IGNORE_C_TYPE:
         return t
+
+    if func_name.endswith("Equals") and t == "c_int":
+        return "bool"
+
     NO_STRINGS = ["data", "fileData", "compData"]
 
     single = [
@@ -141,7 +148,7 @@ def ziggify_type(name: str, t: str, func_name: str) -> str:
         "AutomationEventList", "list", "batch", "glInternalFormat", "glFormat",
         "glType", "mipmaps", "active", "scroll", "view", "checked", "mouseCell",
         "scrollIndex", "focus", "secretViewActive", "color", "alpha", "colorHsv",
-        "translation", "rotation", "scale", "mat"
+        "translation", "rotation", "scale", "mat", "glyphCount"
     ]
     multi = [
         "data", "compData", "points", "fileData", "colors", "pixels",
@@ -154,7 +161,7 @@ def ziggify_type(name: str, t: str, func_name: str) -> str:
     ]
     string = False
 
-    if name == "text" and t == "[*c][*c]const u8":
+    if name == "text" and (t == "[*c][*c]const u8" or t == "[*c][*c]u8"):
         return "[][:0]const u8"
 
     if t.startswith("[*c]") and name not in single and name not in multi:
@@ -180,7 +187,7 @@ def ziggify_type(name: str, t: str, func_name: str) -> str:
 
     error = ""
     if name in HAS_ERROR:
-        error = "RaylibError!"
+        error = f"error{{{name}}}!"
 
     return error + pre + t
 
@@ -215,6 +222,8 @@ def make_return_cast(func_name: str, source_type: str, dest_type: str, inner: st
         inner = f"@as([*][:0]{source_type[8:]}, @ptrCast({inner}))"
     if func_name in TRIVIAL_SIZE:
         return f"{inner}[0..@as(usize, @intCast(_len))]"
+    if func_name.endswith("Equals"):
+        return f"{inner} == 1"
     if source_type in ["[*c]const u8", "[*c]u8"]:
         return f"std.mem.span({inner})"
 
@@ -238,6 +247,9 @@ def fix_pointer(name: str, t: str):
         t = "*anyopaque"
     elif len(pre) == 0:
         t = t.replace("const ", "")
+
+    if name == "rlGetProcAddress":
+        t = "?*const anyopaque"
     return name, t
 
 
@@ -364,6 +376,8 @@ def parse_header(header_name: str, output_file: str, ext_file: str, prefix: str,
         if not arguments:
             arguments = "void"
 
+        zig_name = convert_name(func_name)
+
         for arg in arguments.split(", "):
             if arg == "void":
                 break
@@ -382,6 +396,9 @@ def parse_header(header_name: str, output_file: str, ext_file: str, prefix: str,
             arg_type = c_to_zig_type(arg_type)
             arg_name, arg_type = fix_pointer(arg_name, arg_type)
 
+            if arg_name == zig_name:
+                arg_name += "_"
+
             single_opt = [
                 ("rlDrawVertexArrayElements", "buffer"),
                 ("rlDrawVertexArrayElementsInstanced", "buffer"),
@@ -392,12 +409,21 @@ def parse_header(header_name: str, output_file: str, ext_file: str, prefix: str,
                 ("rlLoadShaderBuffer", "data"),
                 ("rlLoadShaderCode", "vsCode"),
                 ("rlLoadShaderCode", "fsCode"),
-                ("GuiTextInputBox", "secretViewActive")
+                ("GuiTextInputBox", "secretViewActive"),
+                ("GuiSlider", "textLeft"),
+                ("GuiSlider", "textRight"),
+                ("GuiSlider", "value"),
+                ("GuiSliderBar", "textLeft"),
+                ("GuiSliderBar", "textRight"),
+                ("GuiSliderBar", "value"),
+                ("GuiProgressBar", "textLeft"),
+                ("GuiProgressBar", "textRight"),
+                ("GuiProgressBar", "value"),
             ]
 
             zig_type = ziggify_type(arg_name, arg_type, func_name)
 
-            if zig_type.startswith("*") and (func_name, arg_name) in single_opt:
+            if (func_name, arg_name) in single_opt:
                 if not arg_type.startswith("[*c]"):
                     arg_type = "?" + arg_type
                 zig_type = "?" + zig_type
@@ -417,8 +443,6 @@ def parse_header(header_name: str, output_file: str, ext_file: str, prefix: str,
         ext_ret = add_namespace_to_type(return_type)
         ext_heads.append(f"pub extern \"c\" fn {func_name}({zig_c_arguments}) {ext_ret};")
 
-        zig_name = convert_name(func_name)
-
         func_prelude = ""
 
         if func_name in TRIVIAL_SIZE:
@@ -435,7 +459,7 @@ def parse_header(header_name: str, output_file: str, ext_file: str, prefix: str,
         inner = f"cdef.{func_name}({zig_call_args})"
 
         if func_name in TRIVIAL_SIZE:
-            func_prelude += f"const _ptr = {inner};\n    if (_ptr == 0) return RaylibError.{func_name};\n    "
+            func_prelude += f"const _ptr = {inner};\n    if (_ptr == 0) return error.{func_name};\n    "
             inner = "_ptr"
 
         zig_return = ziggify_type(func_name, return_type, func_name)

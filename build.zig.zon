@@ -2,7 +2,7 @@
     .name = .BlobGameUltimate,
     .version = "0.0.1",
     .fingerprint = 0xb2975a99524203cf,
-    .minimum_zig_version = "0.15.2",
+    .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .raylib_zig = .{
             .path = "raylib-zig",

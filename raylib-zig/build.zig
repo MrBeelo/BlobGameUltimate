@@ -3,8 +3,7 @@
 const std = @import("std");
 const this = @This();
 const rl = @import("raylib");
-
-pub const emcc = @import("emcc.zig");
+pub const emsdk = rl.emsdk;
 
 pub const Options = rl.Options;
 pub const OpenglVersion = rl.OpenglVersion;
@@ -17,36 +16,6 @@ const Program = struct {
     desc: []const u8,
 };
 
-fn getRaylib(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, options: Options) *std.Build.Step.Compile {
-    const raylib_dep = b.dependency("raylib", .{
-        .target = target,
-        .optimize = optimize,
-        .raudio = options.raudio,
-        .rmodels = options.rmodels,
-        .rshapes = options.rshapes,
-        .rtext = options.rtext,
-        .rtextures = options.rtextures,
-        .platform = options.platform,
-        .shared = options.shared,
-        .linux_display_backend = options.linux_display_backend,
-        .opengl_version = options.opengl_version,
-        .android_api_version = options.android_api_version,
-        .android_ndk = options.android_ndk,
-    });
-
-    const raylib = raylib_dep.artifact("raylib");
-
-    const raygui_dep = b.dependency("raygui", .{
-        .target = target,
-        .optimize = optimize,
-    });
-
-    rl.addRaygui(b, raylib, raygui_dep, options);
-
-    b.installArtifact(raylib);
-    return raylib;
-}
-
 fn getModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) *std.Build.Module {
     if (b.modules.contains("raylib")) {
         return b.modules.get("raylib").?;
@@ -55,6 +24,7 @@ fn getModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
         .root_source_file = b.path("lib/raylib.zig"),
         .target = target,
         .optimize = optimize,
+        .link_libc = true,
     });
 }
 
@@ -66,6 +36,7 @@ const gui = struct {
             .imports = &.{.{ .name = "raylib-zig", .module = raylib }},
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
         });
     }
 };
@@ -74,9 +45,40 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const raylib_artifact = this.getRaylib(b, target, optimize, Options.getOptions(b));
+    const options = Options.getOptions(b);
+    const raylib_dep = b.dependency("raylib", .{
+        .target = target,
+        .optimize = optimize,
+        .raudio = options.raudio,
+        .rmodels = options.rmodels,
+        .rshapes = options.rshapes,
+        .rtext = options.rtext,
+        .rtextures = options.rtextures,
+        .platform = options.platform,
+        .linkage = options.linkage,
+        .linux_display_backend = options.linux_display_backend,
+        .opengl_version = options.opengl_version,
+        .android_api_version = options.android_api_version,
+        .android_ndk = options.android_ndk,
+        .config = options.config,
+        .raygui = true,
+    });
+
+    const raylib_artifact = raylib_dep.artifact("raylib");
+
+    var raylib_headers: std.StringHashMap(std.Build.LazyPath) = .init(b.allocator);
+    defer raylib_headers.deinit();
+
+    for (raylib_artifact.installed_headers.items) |item| {
+        try raylib_headers.put(item.file.dest_rel_path, item.file.source);
+    }
+
+    b.installArtifact(raylib_artifact);
+
     const raylib = this.getModule(b, target, optimize);
     const raygui = this.gui.getModule(b, target, optimize);
+
+    raylib.linkLibrary(raylib_artifact);
 
     const examples = [_]Program{
         .{
@@ -108,6 +110,16 @@ pub fn build(b: *std.Build) !void {
             .name = "basic_window",
             .path = "examples/core/basic_window.zig",
             .desc = "Creates a basic window with text",
+        },
+        .{
+            .name = "delta_time",
+            .path = "examples/core/delta_time.zig",
+            .desc = "Show how to use frame time (delta time)",
+        },
+        .{
+            .name = "core_monitor_change",
+            .path = "examples/core/core_monitor_change.zig",
+            .desc = "Simple Monitor Manager",
         },
         .{
             .name = "basic_window_web",
@@ -180,9 +192,19 @@ pub fn build(b: *std.Build) !void {
             .desc = "Demonstrates showing and hiding a message box",
         },
         .{
+            .name = "floating_window",
+            .path = "examples/gui/floating_window.zig",
+            .desc = "Demonstrates a floating window",
+        },
+        .{
             .name = "raymarching",
             .path = "examples/shaders/raymarching.zig",
             .desc = "Uses a raymarching in a shader to render shapes",
+        },
+        .{
+            .name = "shaders_ascii_rendering",
+            .path = "examples/shaders/shaders_ascii_rendering.zig",
+            .desc = "Post-processing to render in ASCII",
         },
         .{
             .name = "shaders_basic_pbr",
@@ -285,14 +307,134 @@ pub fn build(b: *std.Build) !void {
             .desc = "Renders a sceen with shadows and a top down persepective",
         },
         .{
+            .name = "background_scrolling",
+            .path = "examples/textures/background_scrolling.zig",
+            .desc = "Background scrolling & parallax demo",
+        },
+        .{
+            .name = "blend_modes",
+            .path = "examples/textures/blend_modes.zig",
+            .desc = "Various blend modes",
+        },
+        .{
+            .name = "bunnymark",
+            .path = "examples/textures/bunnymark.zig",
+            .desc = "Renders a lot of cute bunnies",
+        },
+        .{
+            .name = "draw_tiled",
+            .path = "examples/textures/draw_tiled.zig",
+            .desc = "various texted rendered using tiling",
+        },
+        .{
+            .name = "fog_of_war",
+            .path = "examples/textures/fog_of_war.zig",
+            .desc = "demonstrate a programattic render texture",
+        },
+        .{
+            .name = "gif_player",
+            .path = "examples/textures/gif_player.zig",
+            .desc = "GIF player example",
+        },
+        .{
+            .name = "image_channel",
+            .path = "examples/textures/image_channel.zig",
+            .desc = "Image channel extraction",
+        },
+        .{
+            .name = "image_drawing",
+            .path = "examples/textures/image_drawing.zig",
+            .desc = "Image drawing and manipulation",
+        },
+        .{
+            .name = "image_generation",
+            .path = "examples/textures/image_generation.zig",
+            .desc = "Image generation",
+        },
+        .{
+            .name = "image_kernel",
+            .path = "examples/textures/image_kernel.zig",
+            .desc = "Image kernel convolution",
+        },
+        .{
+            .name = "image_loading",
+            .path = "examples/textures/image_loading.zig",
+            .desc = "Image loading and texture creation",
+        },
+        .{
+            .name = "image_processing",
+            .path = "examples/textures/image_processing.zig",
+            .desc = "Image processing and manipulation",
+        },
+        .{
+            .name = "image_rotate",
+            .path = "examples/textures/image_rotate.zig",
+            .desc = "Image rotation",
+        },
+        .{
+            .name = "image_text",
+            .path = "examples/textures/image_text.zig",
+            .desc = "Image text drawing",
+        },
+        .{
+            .name = "mouse_painting",
+            .path = "examples/textures/mouse_painting.zig",
+            .desc = "Mouse painting example",
+        },
+        .{
+            .name = "npatch_drawing",
+            .path = "examples/textures/npatch_drawing.zig",
+            .desc = "N-patch drawing example",
+        },
+        .{
+            .name = "particles_blending",
+            .path = "examples/textures/particles_blending.zig",
+            .desc = "Particles blending",
+        },
+        .{
+            .name = "polygon_drawing",
+            .path = "examples/textures/polygon_drawing.zig",
+            .desc = "Textured polygon drawing",
+        },
+        .{
+            .name = "raw_data",
+            .path = "examples/textures/raw_data.zig",
+            .desc = "Texture from raw data",
+        },
+        .{
             .name = "sprite_anim",
             .path = "examples/textures/sprite_anim.zig",
             .desc = "Animate a sprite",
         },
         .{
-            .name = "textures_background_scrolling",
-            .path = "examples/textures/textures_background_scrolling.zig",
-            .desc = "Background scrolling & parallax demo",
+            .name = "sprite_button",
+            .path = "examples/textures/sprite_button.zig",
+            .desc = "Sprite button using mouse",
+        },
+        .{
+            .name = "sprite_explosion",
+            .path = "examples/textures/sprite_explosion.zig",
+            .desc = "Sprite explosion animation (one time)",
+        },
+        .{
+            .name = "srcrec_dstrec",
+            .path = "examples/textures/srcrec_dstrec.zig",
+            .desc = "Source and destination rectangles",
+        },
+        .{
+            .name = "textured_curve",
+            .path = "examples/textures/textured_curve.zig",
+            .desc = "Textured curve drawing",
+        },
+        .{
+            .name = "textures_logo_raylib",
+            .path = "examples/textures/textures_logo_raylib.zig",
+            .desc = "Logo drawing",
+        },
+        .{
+            .name = "to_image",
+            .path = "examples/textures/to_image.zig",
+            .desc = "Texture to image conversion",
         },
         .{
             .name = "codepoints_loading",
@@ -355,15 +497,24 @@ pub fn build(b: *std.Build) !void {
             .desc = "Simple text animation",
         },
         .{
-            .name = "textures_image_loading",
-            .path = "examples/textures/textures_image_loading.zig",
-            .desc = "Image loading and texture creation",
-        },
-
-        .{
             .name = "models_heightmap",
             .path = "examples/models/models_heightmap.zig",
             .desc = "Heightmap loading and drawing",
+        },
+        .{
+            .name = "models_bone_socket",
+            .path = "examples/models/models_bone_socket.zig",
+            .desc = "Bone socket",
+        },
+        .{
+            .name = "models_box_collisions",
+            .path = "examples/models/models_box_collisions.zig",
+            .desc = "Box collisions",
+        },
+        .{
+            .name = "models_rlgl_solar_system",
+            .path = "examples/models/models_rlgl_solar_system.zig",
+            .desc = "Solar System",
         },
         // .{
         //     .name = "shaders_basic_lighting",
@@ -375,50 +526,84 @@ pub fn build(b: *std.Build) !void {
     const raylib_test = b.addTest(.{
         .root_module = raylib,
     });
-    raylib_test.linkLibC();
+    raylib_test.root_module.link_libc = true;
 
     const raygui_test = b.addTest(.{
         .root_module = raygui,
     });
     raygui_test.root_module.addImport("raylib-zig", raylib);
-    raygui_test.linkLibC();
+    raygui_test.root_module.link_libc = true;
 
     const test_step = b.step("test", "Check for library compilation errors");
     test_step.dependOn(&raylib_test.step);
     test_step.dependOn(&raygui_test.step);
 
+    const generate_binding_step = b.step("binding", "Generate the binding");
+
+    const usf_dependency = b.addUpdateSourceFiles();
+    usf_dependency.addCopyFileToSource(raylib_headers.get("raylib.h").?, "lib/raylib.h");
+    usf_dependency.addCopyFileToSource(raylib_headers.get("raymath.h").?, "lib/raymath.h");
+    usf_dependency.addCopyFileToSource(raylib_headers.get("rlgl.h").?, "lib/rlgl.h");
+    usf_dependency.addCopyFileToSource(raylib_headers.get("raygui.h").?, "lib/raygui.h");
+
+    const bind_step = b.addSystemCommand(&.{"python3"});
+    bind_step.addFileArg(b.path("lib/generate_functions.py"));
+    bind_step.setCwd(b.path("lib"));
+    bind_step.step.dependOn(&usf_dependency.step);
+
+    generate_binding_step.dependOn(&bind_step.step);
+
     const examples_step = b.step("examples", "Builds all the examples");
 
     for (examples) |ex| {
+        const mod = b.createModule(.{
+            .root_source_file = b.path(ex.path),
+            .target = target,
+            .optimize = optimize,
+        });
+
         if (target.query.os_tag == .emscripten) {
-            const exe_lib = try emcc.compileForEmscripten(b, ex.name, ex.path, target, optimize);
-            exe_lib.root_module.addImport("raylib", raylib);
-            exe_lib.root_module.addImport("raygui", raygui);
+            const wasm = b.addLibrary(.{
+                .name = ex.name,
+                .root_module = mod,
+            });
+            wasm.root_module.addImport("raylib", raylib);
+            wasm.root_module.addImport("raygui", raygui);
 
-            // Note that raylib itself isn't actually added to the exe_lib
-            // output file, so it also needs to be linked with emscripten.
-            exe_lib.linkLibrary(raylib_artifact);
-            const link_step = try emcc.linkWithEmscripten(b, &[_]*std.Build.Step.Compile{ exe_lib, raylib_artifact });
-            link_step.addArg("--emrun");
-            link_step.addArg("--embed-file");
-            link_step.addArg("resources/");
+            const install_dir: std.Build.InstallDir = .{ .custom = "web" };
+            const emcc_flags = emsdk.emccDefaultFlags(b.allocator, .{
+                .optimize = optimize,
+                .asyncify = !std.mem.endsWith(u8, ex.name, "web"),
+            });
+            const emcc_settings = emsdk.emccDefaultSettings(b.allocator, .{
+                .optimize = optimize,
+            });
 
-            const run_step = try emcc.emscriptenRunStep(b);
-            run_step.step.dependOn(&link_step.step);
+            const emcc_step = emsdk.emccStep(b, raylib_artifact, wasm, .{
+                .optimize = optimize,
+                .flags = emcc_flags,
+                .settings = emcc_settings,
+                .shell_file_path = emsdk.shell(raylib_dep),
+                .install_dir = install_dir,
+                .embed_paths = &.{.{ .src_path = "resources/" }},
+            });
+
+            const html_filename = try std.fmt.allocPrint(b.allocator, "{s}.html", .{wasm.name});
+            const emrun_step = emsdk.emrunStep(
+                b,
+                b.getInstallPath(install_dir, html_filename),
+                &.{},
+            );
+            emrun_step.dependOn(emcc_step);
+
             const run_option = b.step(ex.name, ex.desc);
-
-            run_option.dependOn(&run_step.step);
-            examples_step.dependOn(&exe_lib.step);
+            run_option.dependOn(emrun_step);
+            examples_step.dependOn(emcc_step);
         } else {
             const exe = b.addExecutable(.{
                 .name = ex.name,
-                .root_module = b.createModule(.{
-                    .root_source_file = b.path(ex.path),
-                    .target = target,
-                    .optimize = optimize,
-                }),
+                .root_module = mod,
             });
-            exe.linkLibrary(raylib_artifact);
             exe.root_module.addImport("raylib", raylib);
             exe.root_module.addImport("raygui", raygui);
 
